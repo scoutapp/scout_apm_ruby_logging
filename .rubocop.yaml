@@ -1,0 +1,27 @@
+AllCops:
+  Exclude:
+    - "bin/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+  NewCops: disable
+  TargetRubyVersion: 2.5
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+
+Metrics/ClassLength:
+  Max: 102
+
+Naming/FileName:
+  Exclude:
+    - "lib/scout_apm/scout_apm_logging.rb"
+    - "spec/scout_apm_logging_spec.rb"
+
+Style/Documentation:
+  Enabled: true
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    '%w': "[]"
+    '%W': "[]"
