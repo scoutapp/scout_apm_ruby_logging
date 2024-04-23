@@ -4,7 +4,7 @@ AllCops:
     - "tmp/**/*"
     - "vendor/**/*"
   NewCops: disable
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.6
 
 Metrics/BlockLength:
   Exclude:
@@ -12,6 +12,13 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Max: 102
+
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: always
+  Exclude:
+    - "Gemfile*"
+    - "*.gemspec"
+    - "spec/**/*"
 
 Naming/FileName:
   Exclude:
