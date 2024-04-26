@@ -10,7 +10,7 @@ describe ScoutApm::Logging do
     make_basic_app
   end
 
-  it "checks lifecycle of the daemon process" do
+  it 'checks lifecycle of the daemon process' do
     # Check if the PID file exists
     expect(File.exist?(ScoutApm::Logging::MonitorManager::PID_FILE)).to be_truthy
 

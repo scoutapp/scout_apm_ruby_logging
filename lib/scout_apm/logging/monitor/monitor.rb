@@ -8,13 +8,14 @@ require_relative '../monitor_manager'
 
 module ScoutApm
   module Logging
+    # Entry point for the monitor daemon process.
     class Monitor
       def run
         add_exit_handler
 
         loop do
           sleep 1
-          puts "Running..."
+          puts 'Running...'
         end
       end
 

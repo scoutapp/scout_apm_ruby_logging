@@ -2,6 +2,7 @@
 
 module ScoutApm
   module Logging
+    # Manages the creation of the daemon monitor process.
     class MonitorManager
       PID_FILE = '/tmp/scout_apm_log_monitor.pid'
 
@@ -13,7 +14,6 @@ module ScoutApm
         return if File.exist? PID_FILE
 
         gem_directory = File.expand_path('../../..', __dir__)
-        
         Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor &")
         daemon_process = `pgrep -f scout_apm_logging_monitor`.to_i
 
