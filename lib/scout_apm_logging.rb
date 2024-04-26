@@ -2,12 +2,15 @@
 
 require 'scout_apm'
 
+require 'scout_apm/logging/monitor_manager'
+
 module ScoutApm
   module Logging
-    # Temporary class for testing hierarchy.
-    class Hello
-      def self.world
-        puts 'Hello World.'
+    if defined?(Rails) && defined?(Rails::Railtie)
+      class RailTie < ::Rails::Railtie
+        initializer "scout_apm_logging.monitor" do
+          ScoutApm::Logging::MonitorManager.setup!
+        end
       end
     end
   end
