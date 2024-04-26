@@ -10,7 +10,7 @@ describe ScoutApm::Logging do
     make_basic_app
   end
 
-  it "spawns the daemon process" do
+  it "checks lifecycle of the daemon process" do
     # Check if the PID file exists
     expect(File.exist?(ScoutApm::Logging::MonitorManager::PID_FILE)).to be_truthy
 
@@ -19,11 +19,10 @@ describe ScoutApm::Logging do
 
     # Check if the process with the stored PID is running
     expect(Process.kill(0, pid)).to be_truthy
-  end
 
-  after(:all) do
-    process = File.read(ScoutApm::Logging::MonitorManager::PID_FILE).to_i
-    Process.kill('TERM', process)
-    File.delete(ScoutApm::Logging::MonitorManager::PID_FILE)
+    # Kill the process and ensure PID file clean up
+    Process.kill('TERM', pid)
+    sleep 1 # Give the process time to exit
+    expect(File.exist?(ScoutApm::Logging::MonitorManager::PID_FILE)).to be_falsey
   end
 end

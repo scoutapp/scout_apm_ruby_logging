@@ -12,6 +12,8 @@ module ScoutApm
       def self.create_daemon
         return if File.exist? PID_FILE
 
+        # TODO: Investigate behavior of orphaned processes and copy on write behavior.
+        # Do we get all of the parent's memory? We may want to spawn the daemon.
         child_process = Process.fork do
           ScoutApm::Logging::Monitor.new.run
         end
