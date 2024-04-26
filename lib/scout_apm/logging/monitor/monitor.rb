@@ -4,6 +4,8 @@
 # Launched as a daemon process by the monitor manager and Rails startup.
 ##
 
+require_relative '../monitor_manager'
+
 module ScoutApm
   module Logging
     class Monitor

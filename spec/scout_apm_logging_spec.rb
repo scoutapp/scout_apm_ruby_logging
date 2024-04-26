@@ -21,6 +21,7 @@ describe ScoutApm::Logging do
     expect(Process.kill(0, pid)).to be_truthy
 
     # Kill the process and ensure PID file clean up
+    sleep 1 # Give the process time to initialize before sending signal
     Process.kill('TERM', pid)
     sleep 1 # Give the process time to exit
     expect(File.exist?(ScoutApm::Logging::MonitorManager::PID_FILE)).to be_falsey

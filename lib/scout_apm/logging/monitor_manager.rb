@@ -13,10 +13,11 @@ module ScoutApm
         return if File.exist? PID_FILE
 
         gem_directory = File.expand_path('../../..', __dir__)
-        monitor_daemon = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor &")
+        
+        Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor &")
+        daemon_process = `pgrep -f scout_apm_logging_monitor`.to_i
 
-        # TODO: Why are we off by one?
-        File.write(PID_FILE, monitor_daemon + 1)
+        File.write(PID_FILE, daemon_process)
 
         # TODO: Add exit handlers?
       end
