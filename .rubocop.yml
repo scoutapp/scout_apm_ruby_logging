@@ -1,6 +1,8 @@
 AllCops:
   Exclude:
     - "bin/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
     - "spec/spec_helper.rb"
     - "gems/*"
   NewCops: disable
