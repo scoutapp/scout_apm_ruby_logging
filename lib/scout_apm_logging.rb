@@ -10,6 +10,7 @@ module ScoutApm
     if defined?(Rails) && defined?(Rails::Railtie)
       class RailTie < ::Rails::Railtie
         initializer "scout_apm_logging.monitor" do
+          puts "Setting up ScoutApm::Logging::MonitorManager..."
           ScoutApm::Logging::MonitorManager.setup!
         end
       end
