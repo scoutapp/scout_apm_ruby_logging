@@ -3,6 +3,7 @@
 require 'scout_apm'
 
 require 'scout_apm/logging/monitor_manager'
+require 'scout_apm/logging/monitor/monitor'
 
 module ScoutApm
   module Logging

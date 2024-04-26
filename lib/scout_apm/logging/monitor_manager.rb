@@ -6,17 +6,17 @@ module ScoutApm
       PID_FILE = '/tmp/scout_apm_log_monitor.pid'
 
       def self.setup!
-        create_process
+        create_daemon
       end
 
-      def self.create_process
+      def self.create_daemon
         return if File.exist? PID_FILE
 
-        gem_directory = File.expand_path('../../..', __dir__)
-        monitor_daemon = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor &")
+        child_process = Process.fork do
+          ScoutApm::Logging::Monitor.new.run
+        end
 
-        # TODO: Why are we off by one?
-        File.write(PID_FILE, monitor_daemon + 1)
+        File.write(PID_FILE, child_process)
 
         # TODO: Add exit handlers?
       end
