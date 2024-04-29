@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ##
-# Launched as a daemon process by the monitor manager and Rails startup.
+# Launched as a daemon process by the monitor manager at Rails startup.
 ##
 
 require_relative '../monitor_manager'

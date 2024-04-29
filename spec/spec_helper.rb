@@ -9,7 +9,7 @@ def make_basic_app
   require "action_controller/railtie"
   require "action_view/railtie"
 
-  # Require after rails, to ensure the railtie is loaded
+  # Require after rails, to ensure the railtie is ran
   require 'scout_apm_logging'
 
   @app = Class.new(Rails::Application) do
