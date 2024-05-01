@@ -24,7 +24,7 @@ module ScoutApm
 
       def initialize
         @context = ScoutApm::Logging::Context.new
-        context.config = ScoutApm::Logging::Config.with_file(context, context.config.value("config_file"))
+        context.config = ScoutApm::Logging::Config.with_file(context, context.config.value('config_file'))
       end
 
       def setup!
@@ -44,7 +44,7 @@ module ScoutApm
 
       def add_exit_handler
         at_exit do
-          File.delete(context.config.value("monitor_pid_file"))
+          File.delete(context.config.value('monitor_pid_file'))
         end
       end
     end

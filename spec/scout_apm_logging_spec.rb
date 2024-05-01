@@ -11,7 +11,7 @@ describe ScoutApm::Logging do
   end
 
   it 'checks lifecycle of the daemon process' do
-    pid_file = ScoutApm::Logging::MonitorManager.instance.context.config.value("monitor_pid_file")
+    pid_file = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file')
 
     # Check if the PID file exists
     expect(File.exist?(pid_file)).to be_truthy
