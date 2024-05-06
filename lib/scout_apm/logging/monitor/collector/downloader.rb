@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'open-uri'
-
 module ScoutApm
   module Logging
     module Collector
@@ -17,11 +15,21 @@ module ScoutApm
           extract_collector
         end
 
-        def download_collector
+        def download_collector(url = nil)
           # TODO: Check if we have already downloaded the collector.
-          File.open(destination, 'wb', 0777) do |file|
-            open(collector_url, 'rb') do |downloaded_file|
-              file.write(downloaded_file.read)
+          url_to_download = url || collector_url
+          uri = URI(url_to_download)
+
+          Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+            request = Net::HTTP::Get.new(uri)
+            http.request(request) do |response|
+              return download_collector(response['location']) if response.code == '302'
+              
+              File.open(destination, 'wb') do |file|
+                response.read_body do |chunk|
+                  file.write(chunk)
+                end
+              end
             end
           end
         end
