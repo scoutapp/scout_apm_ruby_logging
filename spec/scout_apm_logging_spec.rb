@@ -22,7 +22,6 @@ describe ScoutApm::Logging do
     # Check if the process with the stored PID is running
     expect(Process.kill(0, pid)).to be_truthy
 
-
     # TODO: Improve/cleanup this test, and move it.
     sleep 10 # Give the process time to initialize and download collector and start it
     expect(`pgrep otelcol-contrib`).not_to be_empty

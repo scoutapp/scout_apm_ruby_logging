@@ -27,8 +27,8 @@ module ScoutApm
 
       def initialize
         @context = ScoutApm::Logging::Context.new
-        @context.environment_root = STDIN.gets.chomp
-        @context.environment_type = STDIN.gets.chomp
+        @context.application_root = $stdin.gets.chomp
+        @context.application_env = $stdin.gets.chomp
         ScoutApm::Logging::Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
         context.config = ScoutApm::Logging::Config.with_file(context, determine_scout_config_filepath)
       end
@@ -57,12 +57,11 @@ module ScoutApm
       end
 
       def determine_scout_config_filepath
-        context.environment_root + '/config/scout_apm.yml'
+        "#{context.application_root}/config/scout_apm.yml"
       end
 
       def assumed_rails_log_path
-        environment_type = context.environment_type
-        context.environment_root + "/logs/#{environment_type}.log"
+        context.application_root + "/logs/#{context.application_env}.log"
       end
     end
   end

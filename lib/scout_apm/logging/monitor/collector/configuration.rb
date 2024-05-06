@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 module ScoutApm
   module Logging
     module Collector
+      # Creates the configuration to be used when launching the collector.
       class Configuration
         attr_reader :context
 
@@ -33,7 +36,7 @@ module ScoutApm
               otlp:
                 endpoint: #{context.config.value('logs_reporting_endpoint')}
                 headers:
-                  x-telemetryhub-key: #{context.config.value("logging_ingest_key")}
+                  x-telemetryhub-key: #{context.config.value('logging_ingest_key')}
             service:
               pipelines:
                 logs:

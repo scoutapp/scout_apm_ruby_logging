@@ -23,7 +23,7 @@ module ScoutApm
 
       SETTING_COERCIONS = {
         'monitor_logs' => BooleanCoercion.new,
-        'monitored_logs' => JsonCoercion.new,
+        'monitored_logs' => JsonCoercion.new
       }.freeze
 
       def self.with_file(context, file_path = nil, config = {})
@@ -37,22 +37,22 @@ module ScoutApm
         new(context, overlays)
       end
 
-      # We try and make assumptioms about where the Rails log file is located.
+      # We try and make assumptions about where the Rails log file is located.
       class ConfigDynamic
-        VALUES_TO_SET = {
-          'monitored_logs': [],
+        @@values_to_set = {
+          'monitored_logs': []
         }
 
         def self.set_value(key, value)
-          VALUES_TO_SET[key] = value
+          @@values_to_set[key] = value
         end
 
         def value(key)
-          VALUES_TO_SET[key]
+          @@values_to_set[key]
         end
 
         def has_key?(key)
-          VALUES_TO_SET.key?(key)
+          @@values_to_set.key?(key)
         end
       end
 
@@ -65,7 +65,7 @@ module ScoutApm
           'collector_config_file' => '/tmp/scout_apm/config.yml',
           'collector_version' => '0.99.0',
           'monitored_logs' => [],
-          'logs_reporting_endpoint' =>'https://otlp.telemetryhub.com:4317',
+          'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317'
         }.freeze
 
         def value(key)

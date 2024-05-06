@@ -21,7 +21,8 @@ module ScoutApm
         create_process
       end
 
-      def create_process
+      # TODO: Re-evaluate this method.
+      def create_process # rubocop:disable Metrics/AbcSize
         # TODO: Do an actual check that the process actually exists.
         return if File.exist? context.config.value('monitor_pid_file')
 
@@ -30,7 +31,7 @@ module ScoutApm
         reader, writer = IO.pipe
 
         gem_directory = File.expand_path('../../../..', __dir__)
-        daemon_process = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", pgroup: true, :in => reader)
+        daemon_process = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", pgroup: true, in: reader)
 
         File.write(context.config.value('monitor_pid_file'), daemon_process)
 

@@ -3,10 +3,10 @@
 require_relative './configuration'
 require_relative './downloader'
 
-
 module ScoutApm
   module Logging
     module Collector
+      # Manager class for the downloading, configuring, and starting of the collector.
       class Manager
         attr_reader :context
 
