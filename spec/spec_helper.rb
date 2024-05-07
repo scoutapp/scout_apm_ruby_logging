@@ -2,16 +2,16 @@
 
 require 'scout_apm'
 
+require "rails"
+require "action_controller/railtie"
+require "action_view/railtie"
+
+# Require after rails, to ensure the railtie is ran
+require 'scout_apm_logging'
+
 # Taken from:
 # https://github.com/rails/rails/blob/v7.1.3.2/railties/test/isolation/abstract_unit.rb#L252
 def make_basic_app
-  require "rails"
-  require "action_controller/railtie"
-  require "action_view/railtie"
-
-  # Require after rails, to ensure the railtie is ran
-  require 'scout_apm_logging'
-
   @app = Class.new(Rails::Application) do
     def self.name; "RailtiesTestApp"; end
   end

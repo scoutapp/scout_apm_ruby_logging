@@ -30,6 +30,21 @@ Naming/FileName:
 Style/Documentation:
   Enabled: true
 
+Naming/PredicateName:
+  Enabled: false
+
+Style/ClassVars:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 20
+
+Lint/LiteralAsCondition:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 130
+
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:
     '%w': "[]"
