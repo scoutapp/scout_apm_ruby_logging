@@ -1,6 +1,9 @@
 # Ignore built gems.
 *.gem
-# Ignore lock file.
+# Ignore lock files.
 Gemfile.lock
+gems/*.lock
 # Ignore .idea
 .idea
+# Ignore log files
+log/*.log

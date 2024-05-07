@@ -3,6 +3,8 @@ AllCops:
     - "bin/*"
     - "tmp/**/*"
     - "vendor/**/*"
+    - "spec/spec_helper.rb"
+    - "gems/*"
   NewCops: disable
   TargetRubyVersion: 2.6
 
