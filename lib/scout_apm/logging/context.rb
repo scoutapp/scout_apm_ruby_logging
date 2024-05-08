@@ -19,7 +19,7 @@ module ScoutApm
       end
 
       def config
-        @config ||= ScoutApm::Logging::Config.without_file(self)
+        @config ||= Config.without_file(self)
       end
 
       def environment
@@ -44,7 +44,7 @@ module ScoutApm
     class LoggerFactory
       def self.build(config, environment, application_root = nil)
         root = application_root || environment.root
-        ScoutApm::Logging::Logger.new(root,
+        Logger.new(root,
                                       {
                                         log_level: config.value('log_level'),
                                         log_file_path: config.value('log_file_path'),
@@ -55,7 +55,7 @@ module ScoutApm
       end
 
       def self.build_minimal_logger
-        ScoutApm::Logging::Logger.new(nil, stdout: true)
+        Logger.new(nil, stdout: true)
       end
     end
   end

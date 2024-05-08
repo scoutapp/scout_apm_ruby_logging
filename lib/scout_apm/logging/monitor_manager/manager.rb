@@ -13,20 +13,19 @@ module ScoutApm
       end
 
       def initialize
-        @context = ScoutApm::Logging::Context.new
-        context.config = ScoutApm::Logging::Config.with_file(context, context.config.value('config_file'))
+        @context = Context.new
+        context.config = Config.with_file(context, context.config.value('config_file'))
       end
 
       def setup!
         create_process
       end
 
-      # TODO: Re-evaluate this method.
       def create_process # rubocop:disable Metrics/AbcSize
         # TODO: Do an actual check that the process actually exists.
         return if File.exist? context.config.value('monitor_pid_file')
 
-        ScoutApm::Logging::Utils.ensure_directory_exists(context.config.value('monitor_pid_file'))
+        Utils.ensure_directory_exists(context.config.value('monitor_pid_file'))
 
         reader, writer = IO.pipe
 

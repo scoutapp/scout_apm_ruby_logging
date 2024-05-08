@@ -16,7 +16,6 @@ module ScoutApm
           extract_collector
         end
 
-        # TODO: Re-evaluate this?
         def download_collector(url = nil) # rubocop:disable Metrics/AbcSize
           # TODO: Check if we have already downloaded the collector.
           url_to_download = url || collector_url
@@ -37,7 +36,7 @@ module ScoutApm
         end
 
         def extract_collector
-          ScoutApm::Logging::Utils.ensure_directory_exists(destination)
+          Utils.ensure_directory_exists(destination)
           `tar -xzf #{destination} -C #{context.config.value('collector_download_dir')}`
         end
 

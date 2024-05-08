@@ -26,17 +26,19 @@ module ScoutApm
       end
 
       def initialize
-        @context = ScoutApm::Logging::Context.new
+        @context = Context.new
+
         @context.application_root = $stdin.gets.chomp
         @context.application_env = $stdin.gets.chomp
-        ScoutApm::Logging::Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
-        context.config = ScoutApm::Logging::Config.with_file(context, determine_scout_config_filepath)
+
+        Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
+        context.config = Config.with_file(context, determine_scout_config_filepath)
       end
 
       def setup!
         add_exit_handler
 
-        ScoutApm::Logging::Collector::Manager.new(context).setup!
+        Collector::Manager.new(context).setup!
 
         run!
       end
