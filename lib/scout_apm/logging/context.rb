@@ -45,13 +45,13 @@ module ScoutApm
       def self.build(config, environment, application_root = nil)
         root = application_root || environment.root
         Logger.new(root,
-                                      {
-                                        log_level: config.value('log_level'),
-                                        log_file_path: config.value('log_file_path'),
-                                        stdout: config.value('log_stdout') || environment.platform_integration.log_to_stdout?,
-                                        stderr: config.value('log_stderr'),
-                                        logger_class: config.value('log_class')
-                                      })
+                   {
+                     log_level: config.value('log_level'),
+                     log_file_path: config.value('log_file_path'),
+                     stdout: config.value('log_stdout') || environment.platform_integration.log_to_stdout?,
+                     stderr: config.value('log_stderr'),
+                     logger_class: config.value('log_class')
+                   })
       end
 
       def self.build_minimal_logger

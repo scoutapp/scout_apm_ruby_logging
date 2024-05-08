@@ -63,7 +63,7 @@ module ScoutApm
       end
 
       def assumed_rails_log_path
-        context.application_root + "/logs/#{context.application_env}.log"
+        context.application_root + "/log/#{context.application_env}.log"
       end
     end
   end
