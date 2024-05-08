@@ -14,27 +14,58 @@ module ScoutApm
         logging_ingest_key
         logging_monitor
         monitor_pid_file
+        collector_download_dir
+        collector_config_file
+        collector_version
+        monitored_logs
+        logs_reporting_endpoint
       ].freeze
 
       SETTING_COERCIONS = {
-        'monitor_logs' => BooleanCoercion.new
+        'monitor_logs' => BooleanCoercion.new,
+        'monitored_logs' => JsonCoercion.new
       }.freeze
 
       def self.with_file(context, file_path = nil, config = {})
         overlays = [
           ConfigEnvironment.new,
           ConfigFile.new(context, file_path, config),
+          ConfigDynamic.new,
           ConfigDefaults.new,
           ConfigNull.new
         ]
         new(context, overlays)
       end
 
+      # We try and make assumptions about where the Rails log file is located.
+      class ConfigDynamic
+        @@values_to_set = {
+          'monitored_logs': []
+        }
+
+        def self.set_value(key, value)
+          @@values_to_set[key] = value
+        end
+
+        def value(key)
+          @@values_to_set[key]
+        end
+
+        def has_key?(key)
+          @@values_to_set.key?(key)
+        end
+      end
+
       # Defaults in case no config file has been found.
       class ConfigDefaults
         DEFAULTS = {
           'log_level' => 'info',
-          'monitor_pid_file' => '/tmp/scout_apm_log_monitor.pid'
+          'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
+          'collector_download_dir' => '/tmp/scout_apm',
+          'collector_config_file' => '/tmp/scout_apm/config.yml',
+          'collector_version' => '0.99.0',
+          'monitored_logs' => [],
+          'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317'
         }.freeze
 
         def value(key)
