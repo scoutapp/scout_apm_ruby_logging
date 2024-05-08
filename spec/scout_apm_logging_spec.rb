@@ -27,8 +27,6 @@ describe ScoutApm::Logging do
     Process.kill('TERM', pid)
     sleep 1 # Give the process time to exit
     expect(File.exist?(pid_file)).to be_falsey
-
-    # Cleanup the collector process
     Process.kill('TERM', `pgrep otelcol-contrib`.to_i)
     sleep 1 # Give the process time to exit
   end

@@ -28,8 +28,9 @@ module ScoutApm
       def initialize
         @context = Context.new
 
-        # TODO: Reapproach these. If we are using Sinatra, we don't want to assume a rails log path.
-        set_context_values
+        @context.application_root = $stdin.gets&.chomp
+        @context.application_env = $stdin.gets&.chomp
+
         Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
         context.config = Config.with_file(context, determine_scout_config_filepath)
       end
@@ -64,22 +65,6 @@ module ScoutApm
       # Only useful for testing.
       def stop!
         @break_loop = true
-      end
-
-      # Wait a second to get the values from the pipe, and default if not.
-      # Useful if we are outside a Rails or Sinatra environment, where we may not
-      # get the values from the pipe.
-      def set_context_values
-        input_thread = Thread.new do
-          context.application_root = $stdin.gets&.chomp
-          context.application_env = $stdin.gets&.chomp
-        end
-
-        input_thread.join(1)
-
-        # TODO: Reapproach these?
-        context.application_root ||= Dir.pwd
-        context.application_env ||= 'development'
       end
 
       private
