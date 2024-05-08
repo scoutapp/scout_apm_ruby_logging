@@ -10,6 +10,23 @@ module ScoutApm
         directory = File.dirname(file_path)
         FileUtils.mkdir_p(directory) unless File.directory?(directory)
       end
+
+      # TODO: Add support for other platforms
+      def self.get_architecture
+        if /arm/ =~ RbConfig::CONFIG['arch']
+          'arm64'
+        else
+          'amd64'
+        end
+      end
+
+      def self.get_host_os
+        if /darwin|mac os/ =~ RbConfig::CONFIG['host_os']
+          'darwin'
+        else
+          'linux'
+        end
+      end
     end
   end
 end

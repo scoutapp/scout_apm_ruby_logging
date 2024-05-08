@@ -17,7 +17,10 @@ module ScoutApm
         end
 
         def download_collector(url = nil) # rubocop:disable Metrics/AbcSize
-          # TODO: Check if we have already downloaded the collector.
+          return if File.exist?(destination)
+
+          context.logger.debug("Downloading otelcol-contrib for version #{context.config.value('collector_version')}")
+
           url_to_download = url || collector_url
           uri = URI(url_to_download)
 
@@ -37,33 +40,18 @@ module ScoutApm
 
         def extract_collector
           Utils.ensure_directory_exists(destination)
-          `tar -xzf #{destination} -C #{context.config.value('collector_download_dir')}`
+          system("tar -xzf #{destination} -C #{context.config.value('collector_download_dir')}")
         end
 
         private
 
         def collector_url
           collector_version = context.config.value('collector_version')
+          architecture = Utils.get_architecture
+          host_os = Utils.get_host_os
 
           # https://opentelemetry.io/docs/collector/installation/#manual-linux-installation
           "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v#{collector_version}/otelcol-contrib_#{collector_version}_#{host_os}_#{architecture}.tar.gz"
-        end
-
-        # TODO: Add support for other platforms
-        def architecture
-          if /arm/ =~ RbConfig::CONFIG['arch']
-            'arm64'
-          else
-            'amd64'
-          end
-        end
-
-        def host_os
-          if /darwin|mac os/ =~ RbConfig::CONFIG['host_os']
-            'darwin'
-          else
-            'linux'
-          end
         end
 
         def destination

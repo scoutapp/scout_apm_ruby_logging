@@ -19,11 +19,13 @@ module ScoutApm
         collector_version
         monitored_logs
         logs_reporting_endpoint
+        monitor_interval
       ].freeze
 
       SETTING_COERCIONS = {
         'monitor_logs' => BooleanCoercion.new,
-        'monitored_logs' => JsonCoercion.new
+        'monitored_logs' => JsonCoercion.new,
+        'monitor_interval' => IntegerCoercion.new
       }.freeze
 
       def self.with_file(context, file_path = nil, config = {})
@@ -35,6 +37,30 @@ module ScoutApm
           ConfigNull.new
         ]
         new(context, overlays)
+      end
+
+      def value(key)
+        if ! KNOWN_CONFIG_OPTIONS.include?(key)
+          logger.debug("Requested looking up a unknown configuration key: #{key} (not a problem. Evaluate and add to config.rb)")
+        end
+  
+        o = overlay_for_key(key)
+        raw_value = if o
+                      o.value(key)
+                    else
+                      # No overlay said it could handle this key, bail out with nil.
+                      nil
+                    end
+  
+        coercion = SETTING_COERCIONS.fetch(key, NullCoercion.new)
+        coercion.coerce(raw_value)
+      end
+
+      def all_settings
+        KNOWN_CONFIG_OPTIONS.inject([]) do |memo, key|
+          o = overlay_for_key(key)
+          memo << {:key => key, :value => value(key).inspect, :source => o.name}
+        end
       end
 
       # We try and make assumptions about where the Rails log file is located.
@@ -63,9 +89,10 @@ module ScoutApm
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
           'collector_download_dir' => '/tmp/scout_apm',
           'collector_config_file' => '/tmp/scout_apm/config.yml',
-          'collector_version' => '0.99.0',
+          'collector_version' => '0.100.0',
           'monitored_logs' => [],
-          'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317'
+          'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
+          'monitor_interval' => 60
         }.freeze
 
         def value(key)
