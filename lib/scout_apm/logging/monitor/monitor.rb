@@ -16,6 +16,7 @@ module ScoutApm
   module Logging
     # Entry point for the monitor daemon process.
     class Monitor
+      attr_accessor :break_loop
       attr_reader :context
 
       @@instance = nil
@@ -27,14 +28,15 @@ module ScoutApm
       def initialize
         @context = Context.new
 
-        @context.application_root = $stdin.gets.chomp
-        @context.application_env = $stdin.gets.chomp
-
+        # TODO: Reapproach these. If we are using Sinatra, we don't want to assume a rails log path.
+        set_context_values
         Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
         context.config = Config.with_file(context, determine_scout_config_filepath)
       end
 
       def setup!
+        context.config.logger.info('Monitor daemon process started')
+
         add_exit_handler
 
         Collector::Manager.new(context).setup!
@@ -45,20 +47,51 @@ module ScoutApm
       def run!
         loop do
           sleep context.config.value('monitor_interval')
+
+          break if @break_loop # useful for testing
+
+          # TODO: Add some sort of delay before first healthcheck.
+          # If monitor_interval is too low, we could be checking the collector health before it's even started.
           check_collector_health
         end
       end
 
+      # Only useful for testing.
+      def config=(config)
+        context.config = config
+      end
+
+      # Only useful for testing.
+      def stop!
+        @break_loop = true
+      end
+
+      # Wait a second to get the values from the pipe, and default if not.
+      # Useful if we are outside a Rails or Sinatra environment, where we may not
+      # get the values from the pipe.
+      def set_context_values
+        input_thread = Thread.new do
+          context.application_root = $stdin.gets&.chomp
+          context.application_env = $stdin.gets&.chomp
+        end
+
+        input_thread.join(1)
+
+        # TODO: Reapproach these?
+        context.application_root ||= Dir.pwd
+        context.application_env ||= 'development'
+      end
+
       private
 
-      def check_collector_health
+      def check_collector_health # rubocop:disable Metrics/AbcSize
         # TODO: Make this configurable
-        uri = URI("http://localhost:13133/")
-        
+        uri = URI('http://localhost:13133/')
+
         begin
           response = Net::HTTP.get_response(uri)
 
-          if !response.is_a?(Net::HTTPSuccess)
+          unless response.is_a?(Net::HTTPSuccess)
             context.logger.error("Error occurred while checking collector health: #{response.message}")
             Collector::Manager.new(context).setup!
           end

@@ -9,6 +9,12 @@ require "action_view/railtie"
 # Require after rails, to ensure the railtie is ran
 require 'scout_apm_logging'
 
+RSpec.configure do |config|
+  config.after(:each) do
+    RSpec::Mocks.space.reset_all
+  end
+end
+
 # Taken from:
 # https://github.com/rails/rails/blob/v7.1.3.2/railties/test/isolation/abstract_unit.rb#L252
 def make_basic_app

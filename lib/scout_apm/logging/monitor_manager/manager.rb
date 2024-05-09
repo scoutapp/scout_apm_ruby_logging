@@ -49,8 +49,11 @@ module ScoutApm
       def process_exists?
         return false unless File.exist? context.config.value('monitor_pid_file')
 
+        process_id = File.read(context.config.value('monitor_pid_file'))
+        return false if process_id.empty?
+
         begin
-          Process.kill(0, File.read(context.config.value('monitor_pid_file')).to_i)
+          Process.kill(0, process_id.to_i)
           true
         rescue Errno::ENOENT, Errno::ESRCH
           File.delete(context.config.value('monitor_pid_file'))

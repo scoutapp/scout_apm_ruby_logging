@@ -40,10 +40,10 @@ module ScoutApm
       end
 
       def value(key)
-        if ! KNOWN_CONFIG_OPTIONS.include?(key)
+        unless KNOWN_CONFIG_OPTIONS.include?(key)
           logger.debug("Requested looking up a unknown configuration key: #{key} (not a problem. Evaluate and add to config.rb)")
         end
-  
+
         o = overlay_for_key(key)
         raw_value = if o
                       o.value(key)
@@ -51,7 +51,7 @@ module ScoutApm
                       # No overlay said it could handle this key, bail out with nil.
                       nil
                     end
-  
+
         coercion = SETTING_COERCIONS.fetch(key, NullCoercion.new)
         coercion.coerce(raw_value)
       end
@@ -59,7 +59,7 @@ module ScoutApm
       def all_settings
         KNOWN_CONFIG_OPTIONS.inject([]) do |memo, key|
           o = overlay_for_key(key)
-          memo << {:key => key, :value => value(key).inspect, :source => o.name}
+          memo << { key: key, value: value(key).inspect, source: o.name }
         end
       end
 
@@ -79,6 +79,10 @@ module ScoutApm
 
         def has_key?(key)
           @@values_to_set.key?(key)
+        end
+
+        def name
+          'defaults'
         end
       end
 
@@ -103,13 +107,13 @@ module ScoutApm
           DEFAULTS.key?(key)
         end
 
-        # Defaults are here, but not counted as user specified.
+        # Dyanmic/computed values are here, but not counted as user specified.
         def any_keys_found?
           false
         end
 
         def name
-          'defaults'
+          'dynamic'
         end
       end
     end

@@ -36,6 +36,12 @@ Naming/PredicateName:
 Style/ClassVars:
   Enabled: false
 
+Style/EmptyElse:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
 Metrics/MethodLength:
   Max: 20
 

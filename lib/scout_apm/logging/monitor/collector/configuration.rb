@@ -40,7 +40,7 @@ module ScoutApm
             extensions:
               health_check:
             service:
-              extensions: 
+              extensions:
                 - health_check
               pipelines:
                 logs:

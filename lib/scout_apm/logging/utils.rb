@@ -6,6 +6,7 @@ module ScoutApm
   module Logging
     # Miscellaneous utilities for the logging module.
     module Utils
+      # Takes a complete file path, and ensures that the directory structure exists.
       def self.ensure_directory_exists(file_path)
         directory = File.dirname(file_path)
         FileUtils.mkdir_p(directory) unless File.directory?(directory)
