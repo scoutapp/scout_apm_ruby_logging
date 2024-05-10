@@ -119,7 +119,8 @@ module ScoutApm
 
       def add_exit_handler
         at_exit do
-          File.delete(context.config.value('monitor_pid_file'))
+          # There may not be a file to delete, as the monitor manager ensures cleaning it up when monitoring is disabled.
+          File.delete(context.config.value('monitor_pid_file')) if File.exist?(context.config.value('monitor_pid_file'))
         end
       end
 
