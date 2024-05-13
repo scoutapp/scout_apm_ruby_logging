@@ -9,7 +9,7 @@ task :test do
   puts "Running RSpec tests..."
   Dir.glob("spec/**/*_spec.rb") do |spec_file|
     puts "Running #{spec_file}..."
-    system("docker run -v #{Dir.pwd}:/app --rm rspec-runner bundle exec rspec #{spec_file}")
+    system("docker run --rm rspec-runner bundle exec rspec #{spec_file}")
 
     # Exit the task if a test fails
     unless $?.success?
