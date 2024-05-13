@@ -3,7 +3,7 @@ task :default => :test
 task :test do
   unless system("docker image inspect rspec-runner > /dev/null 2>&1")
     puts "Building RSpec runner Docker image..."
-    system("docker build -t rspec-runner .")
+    system("docker build --build-arg RUBY_VERSION=$DOCKER_RUBY_VERSION -t rspec-runner .")
   end
 
   puts "Running RSpec tests..."
