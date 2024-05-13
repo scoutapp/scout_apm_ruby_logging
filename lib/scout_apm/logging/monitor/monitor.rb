@@ -16,7 +16,6 @@ module ScoutApm
   module Logging
     # Entry point for the monitor daemon process.
     class Monitor
-      attr_accessor :break_loop
       attr_reader :context
 
       @@instance = nil
@@ -49,8 +48,6 @@ module ScoutApm
         loop do
           sleep context.config.value('monitor_interval')
 
-          break if @break_loop # useful for testing
-
           # TODO: Add some sort of delay before first healthcheck.
           # If monitor_interval is too low, we could be checking the collector health before it's even started.
           check_collector_health
@@ -60,11 +57,6 @@ module ScoutApm
       # Only useful for testing.
       def config=(config)
         context.config = config
-      end
-
-      # Only useful for testing.
-      def stop!
-        @break_loop = true
       end
 
       private
