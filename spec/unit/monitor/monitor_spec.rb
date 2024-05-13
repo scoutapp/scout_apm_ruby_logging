@@ -6,7 +6,7 @@ describe ScoutApm::Logging::Monitor do
   it 'should recreate collector process on healthcheck if it has exited' do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
     ScoutApm::Logging::Utils.ensure_directory_exists('/tmp/scout_apm/scout_apm_log_monitor.pid')
-  
+
     ScoutApm::Logging::MonitorManager.instance.setup!
     sleep 10 # Give the manager time to initialize, download the collector, and start it
     collector_process_id = `pgrep otelcol-contrib`
