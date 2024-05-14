@@ -39,6 +39,7 @@ module ScoutApm
                   x-telemetryhub-key: #{context.config.value('logging_ingest_key')}
             extensions:
               health_check:
+                endpoint: #{health_check_endpoint}
             service:
               extensions:
                 - health_check
@@ -51,6 +52,10 @@ module ScoutApm
                   exporters:
                     - otlp
           CONFIG
+        end
+
+        def health_check_endpoint
+          "localhost:#{context.health_check_port}"
         end
       end
     end

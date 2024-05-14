@@ -39,6 +39,10 @@ module ScoutApm
 
         add_exit_handler
 
+        # TODO: Handle situtation where monitor daemon exits, and the known health check
+        # port is lost.
+        set_health_check_port!
+
         Collector::Manager.new(context).setup!
 
         run!
@@ -61,9 +65,40 @@ module ScoutApm
 
       private
 
+      def is_port_available?(port)
+        s = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
+        sa = Socket.sockaddr_in(port, '127.0.0.1')
+
+        begin
+          s.connect_nonblock(sa)
+        rescue Errno::EINPROGRESS
+          if IO.select(nil, [s], nil, 1)
+            begin
+              s.connect_nonblock(sa)
+            rescue Errno::EISCONN
+              return false
+            rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+              return true
+            end
+          end
+        end
+
+        true
+      end
+
+      def set_health_check_port!
+        health_check_port = 13_133
+        until is_port_available?(health_check_port)
+          sleep 1
+          health_check_port += 1
+        end
+
+        @context.health_check_port = health_check_port
+      end
+
       def check_collector_health # rubocop:disable Metrics/AbcSize
-        # TODO: Make this configurable
-        uri = URI('http://localhost:13133/')
+        collector_health_endpoint = "http://localhost:#{context.health_check_port}/"
+        uri = URI(collector_health_endpoint)
 
         begin
           response = Net::HTTP.get_response(uri)

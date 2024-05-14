@@ -6,7 +6,7 @@ module ScoutApm
     class Context
       # Useful for the monitor daemon process, where we get the Rails root through the pipe.
       attr_accessor :application_root
-      attr_accessor :application_env
+      attr_accessor :application_env, :health_check_port
 
       # Initially start up without attempting to load a configuration file. We
       # need to be able to lookup configuration options like "application_root"
