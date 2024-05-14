@@ -20,14 +20,12 @@ describe ScoutApm::Logging do
     # Check if the process with the stored PID is running
     ScoutApm::Logging::Utils.check_process_livelyness(pid, 'scout_apm_logging_monitor')
 
-    sleep 10 # Give the process time to initialize, download the collector, and start it
-    expect(`pgrep otelcol-contrib`).not_to be_empty
+    # Give the process time to initialize, download the collector, and start it
+    wait_for_process_with_timeout!('otelcol-contrib', 20)
 
     # Kill the process and ensure PID file clean up
     Process.kill('TERM', pid)
     sleep 1 # Give the process time to exit
     expect(File.exist?(pid_file)).to be_falsey
-    Process.kill('TERM', `pgrep otelcol-contrib`.to_i)
-    sleep 1 # Give the process time to exit
   end
 end
