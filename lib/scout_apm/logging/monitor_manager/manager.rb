@@ -80,7 +80,6 @@ module ScoutApm
           Process.kill('TERM', process_id.to_i)
         rescue Errno::ENOENT, Errno::ESRCH => e
           context.logger.error("Error occurred while removing monitor process: #{e.message}")
-        ensure
           File.delete(context.config.value('monitor_pid_file'))
         end
       end
