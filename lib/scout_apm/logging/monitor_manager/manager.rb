@@ -18,12 +18,14 @@ module ScoutApm
       end
 
       def setup!
+        context.config.log_settings(context.logger)
+        context.logger.info('Setting up monitor daemon process')
+
         create_process
       end
 
       def create_process # rubocop:disable Metrics/AbcSize
-        # TODO: Do an actual check that the process actually exists.
-        return if File.exist? context.config.value('monitor_pid_file')
+        return if process_exists?
 
         Utils.ensure_directory_exists(context.config.value('monitor_pid_file'))
 
@@ -40,6 +42,20 @@ module ScoutApm
         writer.close
 
         # TODO: Add exit handlers?
+      end
+
+      private
+
+      def process_exists?
+        return false unless File.exist? context.config.value('monitor_pid_file')
+
+        process_id = File.read(context.config.value('monitor_pid_file'))
+        return false if process_id.empty?
+
+        process_exists = Utils.check_process_livelyness(process_id.to_i, 'scout_apm_logging_monitor')
+        File.delete(context.config.value('monitor_pid_file')) unless process_exists
+
+        process_exists
       end
     end
   end

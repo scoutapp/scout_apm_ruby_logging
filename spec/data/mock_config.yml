@@ -1,0 +1,29 @@
+common: &defaults
+  name: Scout APM
+  key: 000011110000
+  log_level: debug
+  monitor: true
+  
+  ###
+  # Logging
+  ###
+  logging_monitor: true
+  logging_ingest_key: "00001000010000"
+  monitored_logs: ["/tmp/fake_log_file.log"]
+  # Need to give a high enough number for the original health check to pass
+  monitor_interval: 10
+
+production:
+  <<: *defaults
+  name: APM Test Conf (Production)
+
+development:
+  <<: *defaults
+  name: APM Test Conf (Development)
+  host: http://localhost:3000
+  monitor: true
+
+test:
+  <<: *defaults
+  name: APM Test Conf (Test)
+  monitor: false

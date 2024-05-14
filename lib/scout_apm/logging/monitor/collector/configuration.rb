@@ -37,7 +37,11 @@ module ScoutApm
                 endpoint: #{context.config.value('logs_reporting_endpoint')}
                 headers:
                   x-telemetryhub-key: #{context.config.value('logging_ingest_key')}
+            extensions:
+              health_check:
             service:
+              extensions:
+                - health_check
               pipelines:
                 logs:
                   receivers:
