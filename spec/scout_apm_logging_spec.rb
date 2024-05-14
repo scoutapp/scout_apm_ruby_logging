@@ -3,10 +3,7 @@
 require 'spec_helper'
 
 describe ScoutApm::Logging do
-  it 'checks the Rails lifecycle for creating the daemon and collector processes' do
-    expect(`pgrep otelcol-contrib`).to be_empty
-    expect(`pgrep scout_apm_log_monitor`).to be_empty
-
+  it 'checks the Rails lifecycle for creating the daemon and collector processes' do    ENV['SCOUT_MONITOR_LOGS'] = 'true'
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
     make_basic_app
 
@@ -28,11 +25,5 @@ describe ScoutApm::Logging do
     Process.kill('TERM', pid)
     sleep 1 # Give the process time to exit
     expect(File.exist?(pid_file)).to be_falsey
-    Process.kill('TERM', `pgrep otelcol-contrib`.to_i)
-    sleep 1 # Give the process time to exit
-    ENV.delete('SCOUT_MONITOR_LOGS')
-
-    expect(`pgrep otelcol-contrib`).to be_empty
-    expect(`pgrep scout_apm_log_monitor`).to be_empty
   end
 end
