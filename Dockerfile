@@ -1,7 +1,5 @@
 ARG RUBY_VERSION=3.3
 FROM ruby:$RUBY_VERSION
-# Use a Ruby base image
-FROM ruby:latest
 
 # Set the working directory inside the container
 WORKDIR /app

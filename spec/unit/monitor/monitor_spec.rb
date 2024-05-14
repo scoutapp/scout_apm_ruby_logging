@@ -19,7 +19,5 @@ describe ScoutApm::Logging::Monitor do
 
     # Give the process time to exit, and for the healthcheck to restart it
     wait_for_process_with_timeout!('otelcol-contrib', 30)
-
-    expect(`pgrep otelcol-contrib --runstates D,R,S`).not_to be_empty
   end
 end
