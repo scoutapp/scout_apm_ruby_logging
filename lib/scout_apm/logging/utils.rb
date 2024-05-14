@@ -40,6 +40,7 @@ module ScoutApm
 
         return false if process_information_status == 'Z'
         return false unless process_information_command.include?(name)
+
         true
       end
     end
