@@ -12,6 +12,9 @@ require "action_view/railtie"
 require 'scout_apm_logging'
 
 RSpec.configure do |config|
+  ENV["SCOUT_LOG_LEVEL"] = "debug"
+  ENV["SCOUT_LOG_STDOUT"] = "true"
+
   config.after(:each) do
     RSpec::Mocks.space.reset_all
   end
