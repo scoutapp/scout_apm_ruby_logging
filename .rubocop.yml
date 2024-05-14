@@ -5,6 +5,7 @@ AllCops:
     - "vendor/**/*"
     - "spec/spec_helper.rb"
     - "gems/*"
+    - "Rakefile"
   NewCops: disable
   TargetRubyVersion: 2.6
 

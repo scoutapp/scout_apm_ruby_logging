@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'timeout'
+
 require 'scout_apm'
 
 require "rails"
@@ -10,6 +12,8 @@ require "action_view/railtie"
 require 'scout_apm_logging'
 
 RSpec.configure do |config|
+  ENV["SCOUT_LOG_LEVEL"] = "debug"
+
   config.after(:each) do
     RSpec::Mocks.space.reset_all
   end
@@ -37,4 +41,13 @@ def make_basic_app
 
   require "rack/test"
   extend ::Rack::Test::Methods
+end
+
+def wait_for_process_with_timeout!(name, timeout_time)
+  Timeout::timeout(timeout_time) do
+    loop do
+      return if `pgrep #{name} --runstates D,R,S`.strip != ""
+      sleep 0.1
+    end
+  end
 end

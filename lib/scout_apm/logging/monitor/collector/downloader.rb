@@ -5,6 +5,7 @@ module ScoutApm
     module Collector
       # Downloads the collector-contrib binary from the OpenTelemetry project.
       class Downloader
+        attr_accessor :failed_count
         attr_reader :context
 
         def initialize(context)
@@ -12,14 +13,27 @@ module ScoutApm
         end
 
         def run!
+          # Account for issues such as failed extractions or download corruptions.
           download_collector
           extract_collector
+        rescue StandardError => e
+          # Bypass Rubcop useless asignment rule.
+          failed_count ||= 0
+
+          if failed_count < 3
+            context.logger.error("Failed to download or extract otelcol-contrib: #{e}. Retrying...")
+            failed_count += 1
+            retry
+          end
         end
 
-        def download_collector(url = nil) # rubocop:disable Metrics/AbcSize
+        def download_collector(url = nil, redirect: false) # rubocop:disable Metrics/AbcSize
           return if File.exist?(destination)
 
-          context.logger.debug("Downloading otelcol-contrib for version #{context.config.value('collector_version')}")
+          # Prevent double logging.
+          unless redirect
+            context.logger.debug("Downloading otelcol-contrib for version #{context.config.value('collector_version')}")
+          end
 
           url_to_download = url || collector_url
           uri = URI(url_to_download)
@@ -27,7 +41,7 @@ module ScoutApm
           Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
             request = Net::HTTP::Get.new(uri)
             http.request(request) do |response|
-              return download_collector(response['location']) if response.code == '302'
+              return download_collector(response['location'], redirect: true) if response.code == '302'
 
               File.open(destination, 'wb') do |file|
                 response.read_body do |chunk|

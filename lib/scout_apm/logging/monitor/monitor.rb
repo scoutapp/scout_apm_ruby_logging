@@ -16,7 +16,6 @@ module ScoutApm
   module Logging
     # Entry point for the monitor daemon process.
     class Monitor
-      attr_accessor :break_loop
       attr_reader :context
 
       @@instance = nil
@@ -28,8 +27,9 @@ module ScoutApm
       def initialize
         @context = Context.new
 
-        # TODO: Reapproach these. If we are using Sinatra, we don't want to assume a rails log path.
-        set_context_values
+        @context.application_root = $stdin.gets&.chomp
+        @context.application_env = $stdin.gets&.chomp
+
         Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
         context.config = Config.with_file(context, determine_scout_config_filepath)
       end
@@ -39,7 +39,7 @@ module ScoutApm
 
         add_exit_handler
 
-        Collector::Manager.new(context).setup!
+        initiate_collector_setup!
 
         run!
       end
@@ -47,8 +47,6 @@ module ScoutApm
       def run!
         loop do
           sleep context.config.value('monitor_interval')
-
-          break if @break_loop # useful for testing
 
           # TODO: Add some sort of delay before first healthcheck.
           # If monitor_interval is too low, we could be checking the collector health before it's even started.
@@ -61,43 +59,61 @@ module ScoutApm
         context.config = config
       end
 
-      # Only useful for testing.
-      def stop!
-        @break_loop = true
-      end
-
-      # Wait a second to get the values from the pipe, and default if not.
-      # Useful if we are outside a Rails or Sinatra environment, where we may not
-      # get the values from the pipe.
-      def set_context_values
-        input_thread = Thread.new do
-          context.application_root = $stdin.gets&.chomp
-          context.application_env = $stdin.gets&.chomp
-        end
-
-        input_thread.join(1)
-
-        # TODO: Reapproach these?
-        context.application_root ||= Dir.pwd
-        context.application_env ||= 'development'
-      end
-
       private
 
-      def check_collector_health # rubocop:disable Metrics/AbcSize
-        # TODO: Make this configurable
-        uri = URI('http://localhost:13133/')
+      # TODO: Handle situtation where monitor daemon exits, and the known health check
+      # port is lost.
+      def initiate_collector_setup!
+        set_health_check_port!
+
+        Collector::Manager.new(context).setup!
+      end
+
+      def is_port_available?(port)
+        s = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
+        sa = Socket.sockaddr_in(port, '127.0.0.1')
+
+        begin
+          s.connect_nonblock(sa)
+        rescue Errno::EINPROGRESS
+          if IO.select(nil, [s], nil, 1)
+            begin
+              s.connect_nonblock(sa)
+            rescue Errno::EISCONN
+              return false
+            rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+              return true
+            end
+          end
+        end
+
+        true
+      end
+
+      def set_health_check_port!
+        health_check_port = 13_133
+        until is_port_available?(health_check_port)
+          sleep 1
+          health_check_port += 1
+        end
+
+        @context.health_check_port = health_check_port
+      end
+
+      def check_collector_health
+        collector_health_endpoint = "http://localhost:#{context.health_check_port}/"
+        uri = URI(collector_health_endpoint)
 
         begin
           response = Net::HTTP.get_response(uri)
 
           unless response.is_a?(Net::HTTPSuccess)
             context.logger.error("Error occurred while checking collector health: #{response.message}")
-            Collector::Manager.new(context).setup!
+            initiate_collector_setup!
           end
         rescue StandardError => e
           context.logger.error("Error occurred while checking collector health: #{e.message}")
-          Collector::Manager.new(context).setup!
+          initiate_collector_setup!
         end
       end
 

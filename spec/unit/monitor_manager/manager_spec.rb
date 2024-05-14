@@ -1,36 +1,27 @@
 require 'spec_helper'
 
-require_relative '../../../lib/scout_apm/logging/utils'
 require_relative '../../../lib/scout_apm/logging/monitor/collector/manager'
 
 describe ScoutApm::Logging::Collector::Manager do
   it 'should recreate monitor process if monitor.pid file is errant' do
     ScoutApm::Logging::Utils.ensure_directory_exists('/tmp/scout_apm/scout_apm_log_monitor.pid')
 
+    # A high enough number to not be a PID of a running process
     pid_file_path = '/tmp/scout_apm/scout_apm_log_monitor.pid'
     File.open(pid_file_path, 'w') do |file|
-      file.write('12345')
+      file.write('123456')
     end
 
-    # Stub out the IO.pipe and Process.spawn calls
-    reader_mock = double('Reader')
-    writer_mock = double('Writer')
-
-    allow(reader_mock).to receive(:gets).and_return('mocked_input')
-    allow(reader_mock).to receive(:close)
-    allow(writer_mock).to receive(:close)
-    expect(writer_mock).to receive(:puts)
-
-    allow(IO).to receive(:pipe).and_return([reader_mock, writer_mock])
-    allow(Process).to receive(:spawn).exactly(1)
-
     ScoutApm::Logging::MonitorManager.instance.setup!
+
+    # Give the process time to initialize, download the collector, and start it
+    wait_for_process_with_timeout!('otelcol-contrib', 20)
 
     new_pid = File.read(pid_file_path).to_i
 
     expect(new_pid).not_to eq(12_345)
 
     # Check if the process with the stored PID is running
-    ScoutApm::Logging::Utils.check_process_livelyness(new_pid, 'scout_apm_logging_monitor')
+    expect(Process.kill(0, new_pid)).to be_truthy
   end
 end
