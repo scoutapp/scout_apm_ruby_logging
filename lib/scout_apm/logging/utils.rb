@@ -28,6 +28,20 @@ module ScoutApm
           'linux'
         end
       end
+
+      def self.check_process_livelyness(pid, name)
+        # Pipe to cat to prevent truncation of the output
+        process_information = `ps -p #{pid} -o pid=,stat=,command= | cat`
+        return false if process_information.empty?
+
+        process_information_parts = process_information.split(' ')
+        process_information_status = process_information_parts[1]
+        process_information_command = process_information_parts[2]
+
+        return false if process_information_status == 'Z'
+        return false unless process_information_command.include?(name)
+        true
+      end
     end
   end
 end

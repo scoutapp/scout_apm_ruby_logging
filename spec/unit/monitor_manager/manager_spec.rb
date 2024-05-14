@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+require_relative '../../../lib/scout_apm/logging/utils'
 require_relative '../../../lib/scout_apm/logging/monitor/collector/manager'
 
 describe ScoutApm::Logging::Collector::Manager do
@@ -30,6 +31,6 @@ describe ScoutApm::Logging::Collector::Manager do
     expect(new_pid).not_to eq(12_345)
 
     # Check if the process with the stored PID is running
-    expect(Process.kill(0, new_pid)).to be_truthy
+    ScoutApm::Logging::Utils.check_process_livelyness(new_pid, 'scout_apm_logging_monitor')
   end
 end

@@ -18,7 +18,7 @@ describe ScoutApm::Logging do
     pid = File.read(pid_file).to_i
 
     # Check if the process with the stored PID is running
-    expect(Process.kill(0, pid)).to be_truthy
+    ScoutApm::Logging::Utils.check_process_livelyness(pid, 'scout_apm_logging_monitor')
 
     sleep 10 # Give the process time to initialize, download the collector, and start it
     expect(`pgrep otelcol-contrib`).not_to be_empty
