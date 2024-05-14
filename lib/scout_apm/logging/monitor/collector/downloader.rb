@@ -14,11 +14,13 @@ module ScoutApm
 
         def run!
           # Account for issues such as failed extractions or download corruptions.
-
           download_collector
           extract_collector
         rescue StandardError => e
-          if failed_count < 2
+          # Bypass Rubcop useless asignment rule.
+          failed_count ||= 0
+
+          if failed_count < 3
             context.logger.error("Failed to download or extract otelcol-contrib: #{e}. Retrying...")
             failed_count += 1
             retry
