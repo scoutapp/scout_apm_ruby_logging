@@ -41,9 +41,8 @@ module ScoutApm
 
         # TODO: Handle situtation where monitor daemon exits, and the known health check
         # port is lost.
-        set_health_check_port!
 
-        Collector::Manager.new(context).setup!
+        initiate_collector_setup!
 
         run!
       end
@@ -64,6 +63,12 @@ module ScoutApm
       end
 
       private
+
+      def initiate_collector_setup!
+        set_health_check_port!
+
+        Collector::Manager.new(context).setup!
+      end
 
       def is_port_available?(port)
         s = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
@@ -105,11 +110,11 @@ module ScoutApm
 
           unless response.is_a?(Net::HTTPSuccess)
             context.logger.error("Error occurred while checking collector health: #{response.message}")
-            Collector::Manager.new(context).setup!
+            initiate_collector_setup!
           end
         rescue StandardError => e
           context.logger.error("Error occurred while checking collector health: #{e.message}")
-          Collector::Manager.new(context).setup!
+          initiate_collector_setup!
         end
       end
 
