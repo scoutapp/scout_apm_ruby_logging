@@ -39,9 +39,6 @@ module ScoutApm
 
         add_exit_handler
 
-        # TODO: Handle situtation where monitor daemon exits, and the known health check
-        # port is lost.
-
         initiate_collector_setup!
 
         run!
@@ -64,6 +61,8 @@ module ScoutApm
 
       private
 
+      # TODO: Handle situtation where monitor daemon exits, and the known health check
+      # port is lost.
       def initiate_collector_setup!
         set_health_check_port!
 
@@ -101,7 +100,7 @@ module ScoutApm
         @context.health_check_port = health_check_port
       end
 
-      def check_collector_health # rubocop:disable Metrics/AbcSize
+      def check_collector_health
         collector_health_endpoint = "http://localhost:#{context.health_check_port}/"
         uri = URI(collector_health_endpoint)
 
