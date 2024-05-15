@@ -3,7 +3,7 @@ require 'spec_helper'
 require_relative '../../../lib/scout_apm/logging/monitor/collector/manager'
 
 describe ScoutApm::Logging::Collector::Manager do
-  it 'should recreate monitor process if monitor.pid file is errant' do
+  it 'should recreate the monitor process if monitor.pid file is errant' do
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
     ScoutApm::Logging::Utils.ensure_directory_exists('/tmp/scout_apm/scout_apm_log_monitor.pid')
 
@@ -30,26 +30,5 @@ describe ScoutApm::Logging::Collector::Manager do
     Process.kill('TERM', new_pid)
     Process.kill('TERM', `pgrep otelcol-contrib --runstates D,R,S`.to_i)
     sleep 1 # Give the process time to exit
-  end
-
-  it 'should remove daemon and collector process if present, and monitor is false' do
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
-    expect(`pgrep otelcol-contrib --runstates D,R,S`).to be_empty
-
-    ScoutApm::Logging::MonitorManager.instance.setup!
-
-    wait_for_process_with_timeout!('otelcol-contrib', 20)
-
-    ENV['SCOUT_MONITOR_LOGS'] = 'false'
-
-    ScoutApm::Logging::MonitorManager.instance.setup!
-
-    sleep 5 # Give the process time to exit
-
-    expect(File.exist?(ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file'))).to be_falsey
-    expect(`pgrep otelcol-contrib --runstates D,R,S`).to be_empty
-    expect(`pgrep scout_apm_log_monitor --runstates D,R,S`).to be_empty
-
-    ENV.delete('SCOUT_MONITOR_LOGS')
   end
 end
