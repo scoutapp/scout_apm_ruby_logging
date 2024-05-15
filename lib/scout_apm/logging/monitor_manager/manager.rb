@@ -99,10 +99,17 @@ module ScoutApm
         end
       end
 
+      def remove_data_file
+        return unless File.exist? context.config.value('monitor_data_file')
+
+        File.delete(context.config.value('monitor_data_file'))
+      end
+
       # Remove both the monitor and collector processes that we have spawned.
       def remove_processes
         remove_monitor_process
         remove_collector_process
+        remove_data_file
       end
     end
   end

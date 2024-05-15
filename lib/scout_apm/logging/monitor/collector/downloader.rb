@@ -28,7 +28,7 @@ module ScoutApm
         end
 
         def download_collector(url = nil, redirect: false) # rubocop:disable Metrics/AbcSize
-          return if File.exist?(destination)
+          # TODO: Add a check to prevent downloading if we have a verified non corrupted executable.
 
           # Prevent double logging.
           unless redirect
