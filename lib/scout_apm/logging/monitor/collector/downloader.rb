@@ -6,16 +6,20 @@ module ScoutApm
       # Downloads the collector-contrib binary from the OpenTelemetry project.
       class Downloader
         attr_accessor :failed_count
-        attr_reader :context
+        attr_reader :context, :checksum
 
         def initialize(context)
           @context = context
+          @checksum = Checksum.new(context)
         end
 
         def run!
+          return if checksum.verified_checksum?
+
           # Account for issues such as failed extractions or download corruptions.
           download_collector
           extract_collector
+          verify_checksum
         rescue StandardError => e
           # Bypass Rubcop useless asignment rule.
           failed_count ||= 0
@@ -28,8 +32,6 @@ module ScoutApm
         end
 
         def download_collector(url = nil, redirect: false) # rubocop:disable Metrics/AbcSize
-          # TODO: Add a check to prevent downloading if we have a verified non corrupted executable.
-
           # Prevent double logging.
           unless redirect
             context.logger.debug("Downloading otelcol-contrib for version #{context.config.value('collector_version')}")
@@ -58,6 +60,10 @@ module ScoutApm
         end
 
         private
+
+        def verify_checksum
+          raise 'Invalid checksum on download.' unless checksum.verified_checksum?
+        end
 
         def collector_url
           collector_version = context.config.value('collector_version')
