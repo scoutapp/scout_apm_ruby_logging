@@ -6,7 +6,6 @@ WORKDIR /app
 
 ARG BUNDLE_GEMFILE=./gems/rails.gemfile
 
-
 # # Copy the entire project directory into the container
 COPY . .
 
