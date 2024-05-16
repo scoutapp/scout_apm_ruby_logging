@@ -9,7 +9,7 @@ describe ScoutApm::Logging::Config do
     expect(conf.value('log_level')).to eq('debug')
     expect(conf.value('monitor_logs')).to eq(true)
     expect(conf.value('monitor_pid_file')).to eq('/tmp/scout_apm/scout_apm_log_monitor.pid')
-    expect(conf.value('logging_ingest_key')).to eq('00001000010000')
+    expect(conf.value('logging_ingest_key')).to eq('00001000010000abc')
     expect(conf.value('monitored_logs')).to eq(['/tmp/fake_log_file.log'])
   end
 end
