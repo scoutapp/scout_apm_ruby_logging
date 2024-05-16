@@ -3,12 +3,11 @@
 require 'spec_helper'
 
 describe ScoutApm::Logging do
-  before(:all) do
-    # Run the Railtie initializers to trigger the daemon spawning
-    make_basic_app
-  end
-
   it 'checks the Rails lifecycle for creating the daemon and collector processes' do
+    ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    make_basic_app
+
     pid_file = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file')
 
     # Check if the PID file exists
@@ -21,7 +20,9 @@ describe ScoutApm::Logging do
     ScoutApm::Logging::Utils.check_process_livelyness(pid, 'scout_apm_logging_monitor')
 
     # Give the process time to initialize, download the collector, and start it
-    wait_for_process_with_timeout!('otelcol-contrib', 20)
+    wait_for_process_with_timeout!(
+      'otelcol-contrib', 20
+    )
 
     # Kill the process and ensure PID file clean up
     Process.kill('TERM', pid)

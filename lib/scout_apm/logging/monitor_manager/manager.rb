@@ -21,7 +21,19 @@ module ScoutApm
         context.config.log_settings(context.logger)
         context.logger.info('Setting up monitor daemon process')
 
-        create_process
+        determine_configuration_state
+      end
+
+      def determine_configuration_state
+        monitoring_enabled = context.config.value('monitor_logs')
+
+        if monitoring_enabled
+          context.logger.info('Log monitoring enabled')
+          create_process
+        else
+          context.logger.info('Log monitoring disabled')
+          remove_processes
+        end
       end
 
       def create_process # rubocop:disable Metrics/AbcSize
@@ -56,6 +68,41 @@ module ScoutApm
         File.delete(context.config.value('monitor_pid_file')) unless process_exists
 
         process_exists
+      end
+
+      def remove_monitor_process # rubocop:disable Metrics/AbcSize
+        return unless File.exist? context.config.value('monitor_pid_file')
+
+        process_id = File.read(context.config.value('monitor_pid_file'))
+        return if process_id.empty?
+
+        begin
+          Process.kill('TERM', process_id.to_i)
+        rescue Errno::ENOENT, Errno::ESRCH => e
+          context.logger.error("Error occurred while removing monitor process: #{e.message}")
+          File.delete(context.config.value('monitor_pid_file'))
+        end
+      end
+
+      def remove_collector_process # rubocop:disable Metrics/AbcSize
+        return unless File.exist? context.config.value('collector_pid_file')
+
+        process_id = File.read(context.config.value('collector_pid_file'))
+        return if process_id.empty?
+
+        begin
+          Process.kill('TERM', process_id.to_i)
+        rescue Errno::ENOENT, Errno::ESRCH => e
+          context.logger.error("Error occurred while removing collector process: #{e.message}")
+        ensure
+          File.delete(context.config.value('collector_pid_file'))
+        end
+      end
+
+      # Remove both the monitor and collector processes that we have spawned.
+      def remove_processes
+        remove_monitor_process
+        remove_collector_process
       end
     end
   end

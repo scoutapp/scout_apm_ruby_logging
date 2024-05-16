@@ -7,8 +7,9 @@ common: &defaults
   ###
   # Logging
   ###
-  logging_monitor: true
+  monitor_logs: true
   logging_ingest_key: "00001000010000"
+  monitored_logs: ["/tmp/fake_log_file.log"]
 
 production:
   <<: *defaults

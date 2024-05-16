@@ -30,7 +30,8 @@ module ScoutApm
 
         def start_collector
           context.logger.info('Starting otelcol-contrib')
-          Process.spawn("#{extracted_collector_path}/otelcol-contrib --config #{config_file}")
+          collector_process = Process.spawn("#{extracted_collector_path}/otelcol-contrib --config #{config_file}")
+          File.write(context.config.value('collector_pid_file'), collector_process)
         end
 
         private

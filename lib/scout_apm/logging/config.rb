@@ -12,8 +12,9 @@ module ScoutApm
         log_file_path
         log_class
         logging_ingest_key
-        logging_monitor
+        monitor_logs
         monitor_pid_file
+        collector_pid_file
         collector_download_dir
         collector_config_file
         collector_version
@@ -91,6 +92,7 @@ module ScoutApm
         DEFAULTS = {
           'log_level' => 'info',
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
+          'collector_pid_file' => '/tmp/scout_apm/scout_apm_otel_collector.pid',
           'collector_download_dir' => '/tmp/scout_apm',
           'collector_config_file' => '/tmp/scout_apm/config.yml',
           'collector_version' => '0.100.0',
