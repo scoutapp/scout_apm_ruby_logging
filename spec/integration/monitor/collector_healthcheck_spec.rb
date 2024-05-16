@@ -5,6 +5,7 @@ require_relative '../../../lib/scout_apm/logging/monitor/monitor'
 describe ScoutApm::Logging::Monitor do
   it 'should recreate collector process on healthcheck if it has exited' do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
+    ENV['SCOUT_DELAY_FIRST_HEALTHCHECK'] = '10'
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
     ScoutApm::Logging::Utils.ensure_directory_exists('/tmp/scout_apm/scout_apm_log_monitor.pid')
 

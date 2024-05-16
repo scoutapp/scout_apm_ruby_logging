@@ -3,6 +3,7 @@
 ##
 # Launched as a daemon process by the monitor manager at Rails startup.
 ##
+require 'json'
 
 require 'scout_apm'
 
@@ -37,14 +38,20 @@ module ScoutApm
       def setup!
         context.config.logger.info('Monitor daemon process started')
 
-        add_exit_handler
+        load_previous_monitor_data!
 
-        initiate_collector_setup!
+        add_exit_handler!
+
+        initiate_collector_setup! unless has_previous_collector_setup?
 
         run!
       end
 
       def run!
+        # Prevent the monitor from checking the collector health before it's fully started.
+        # Having this be configurable is useful for testing.
+        sleep context.config.value('delay_first_healthcheck')
+
         loop do
           sleep context.config.value('monitor_interval')
 
@@ -61,8 +68,30 @@ module ScoutApm
 
       private
 
-      # TODO: Handle situtation where monitor daemon exits, and the known health check
-      # port is lost.
+      # If we have a previous monitor data file, load it into the context.
+      def load_previous_monitor_data!
+        return unless File.exist?(context.config.value('monitor_data_file'))
+
+        file_contents = File.read(context.config.value('monitor_data_file'))
+        data = JSON.parse(file_contents)
+        context.stored_data = data
+      end
+
+      def has_previous_collector_setup? # rubocop:disable Metrics/AbcSize
+        return false unless context.stored_data&.key?('health_check_port')
+
+        healthy_response = request_health_check_port("http://localhost:#{context.stored_data['health_check_port']}/")
+
+        if healthy_response
+          context.health_check_port = context.stored_data['health_check_port']
+          context.logger.info("Collector already setup on port #{context.stored_data['health_check_port']}")
+        else
+          context.logger.info('Setting up new collector')
+        end
+
+        healthy_response
+      end
+
       def initiate_collector_setup!
         set_health_check_port!
 
@@ -97,27 +126,42 @@ module ScoutApm
           health_check_port += 1
         end
 
-        @context.health_check_port = health_check_port
+        # TODO: If we start to use the monitor data file more, we should move the management of the data file
+        # into its own class.
+        data = { health_check_port: health_check_port }
+        File.write(context.config.value('monitor_data_file'), JSON.pretty_generate(data))
+
+        context.health_check_port = health_check_port
       end
 
-      def check_collector_health
-        collector_health_endpoint = "http://localhost:#{context.health_check_port}/"
-        uri = URI(collector_health_endpoint)
+      def request_health_check_port(endpoint)
+        uri = URI(endpoint)
 
         begin
           response = Net::HTTP.get_response(uri)
 
           unless response.is_a?(Net::HTTPSuccess)
             context.logger.error("Error occurred while checking collector health: #{response.message}")
-            initiate_collector_setup!
+            return false
           end
         rescue StandardError => e
           context.logger.error("Error occurred while checking collector health: #{e.message}")
-          initiate_collector_setup!
+          return false
         end
+
+        true
       end
 
-      def add_exit_handler
+      def check_collector_health
+        context.logger.debug('Checking collector health')
+        collector_health_endpoint = "http://localhost:#{context.health_check_port}/"
+
+        healthy_response = request_health_check_port(collector_health_endpoint)
+
+        initiate_collector_setup! unless healthy_response
+      end
+
+      def add_exit_handler!
         at_exit do
           # There may not be a file to delete, as the monitor manager ensures cleaning it up when monitoring is disabled.
           File.delete(context.config.value('monitor_pid_file')) if File.exist?(context.config.value('monitor_pid_file'))

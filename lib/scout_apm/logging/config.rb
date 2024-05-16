@@ -14,6 +14,7 @@ module ScoutApm
         logging_ingest_key
         monitor_logs
         monitor_pid_file
+        monitor_data_file
         collector_pid_file
         collector_download_dir
         collector_config_file
@@ -21,12 +22,14 @@ module ScoutApm
         monitored_logs
         logs_reporting_endpoint
         monitor_interval
+        delay_first_healthcheck
       ].freeze
 
       SETTING_COERCIONS = {
         'monitor_logs' => BooleanCoercion.new,
         'monitored_logs' => JsonCoercion.new,
-        'monitor_interval' => IntegerCoercion.new
+        'monitor_interval' => IntegerCoercion.new,
+        'delay_first_healthcheck' => IntegerCoercion.new
       }.freeze
 
       def self.with_file(context, file_path = nil, config = {})
@@ -92,13 +95,15 @@ module ScoutApm
         DEFAULTS = {
           'log_level' => 'info',
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
+          'monitor_data_file' => '/tmp/scout_apm/scout_apm_log_monitor_data.json',
           'collector_pid_file' => '/tmp/scout_apm/scout_apm_otel_collector.pid',
           'collector_download_dir' => '/tmp/scout_apm',
           'collector_config_file' => '/tmp/scout_apm/config.yml',
           'collector_version' => '0.100.0',
           'monitored_logs' => [],
           'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
-          'monitor_interval' => 60
+          'monitor_interval' => 60,
+          'delay_first_healthcheck' => 60
         }.freeze
 
         def value(key)

@@ -1,10 +1,7 @@
-# frozen_string_literal: true
-
 require 'spec_helper'
 
 describe ScoutApm::Logging do
   it 'checks the Rails lifecycle for creating the daemon and collector processes' do
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
     make_basic_app
 
