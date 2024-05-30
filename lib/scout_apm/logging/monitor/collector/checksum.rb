@@ -8,10 +8,10 @@ module ScoutApm
         attr_reader :context
 
         KNOWN_CHECKSUMS = {
-          'linux_arm64' => 'e5a57598591a03f87b2a3cd4de6359da2c343e3b482b192f41fe9ed22d2e2e7b',
-          'linux_amd64' => '583f5976578db7a8fe3079a7103bc0348020e06d698416b62661ddaa6bb57c9e',
-          'darwin_arm64' => '60da15041b838998d1d652a4314ad8aacd24e4e313f1f0dc17692084ab2cea1b',
-          'darwin_amd64' => 'c524fff8814cf02117d2ea047a5755ff07462ce2309864dd56f091a763c8712f'
+          'darwin_amd64' => 'cd2ee4b88edafd2d4264f9e28834683c60dab21a46493b7398b806b43c7bee3a',
+          'darwin_arm64' => '320e5a3c282759238248a9dbb0a39980865713e4335685e1990400436a57cffa',
+          'linux_amd64' => '58474c2ae87fbc41a8acf20bfd3a4b82f2b13a26f767090062e42a6a857bfb89',
+          'linux_arm64' => '4d5e2f9685ecc46854d09fa38192c038597392e2565be9edd162810e80bd42de'
         }.freeze
 
         def initialize(context)
@@ -19,9 +19,9 @@ module ScoutApm
         end
 
         def verified_checksum?(should_log_failures: false)
-          return false unless File.exist?("#{extracted_collector_path}/otelcol-contrib")
+          return false unless File.exist?("#{extracted_collector_path}/otelcol.tar.gz")
 
-          checksum = `sha256sum #{extracted_collector_path}/otelcol-contrib`.split(' ').first
+          checksum = `sha256sum #{extracted_collector_path}/otelcol.tar.gz`.split(' ').first
           same_checksum_result = checksum == KNOWN_CHECKSUMS[double]
 
           log_failed_checksum if !same_checksum_result && should_log_failures
@@ -30,9 +30,9 @@ module ScoutApm
 
         def log_failed_checksum
           if KNOWN_CHECKSUMS.key?(double)
-            context.logger.error('Checksum verification failed for otelcol-contrib binary.')
+            context.logger.error('Checksum verification failed for otelcol.tar.gz.')
           else
-            context.logger.error("Checksum verification failed for otelcol-contrib binary. Unknown architecture: #{double}")
+            context.logger.error("Checksum verification failed for otelcol.tar.gz. Unknown architecture: #{double}")
           end
         end
 
