@@ -19,9 +19,9 @@ module ScoutApm
         end
 
         def verified_checksum?(should_log_failures: false)
-          return false unless File.exist?("#{extracted_collector_path}/otelcol.tar.gz")
+          return false unless File.exist?(collector_tar_path)
 
-          checksum = `sha256sum #{extracted_collector_path}/otelcol.tar.gz`.split(' ').first
+          checksum = `sha256sum #{collector_tar_path}`.split(' ').first
           same_checksum_result = checksum == KNOWN_CHECKSUMS[double]
 
           log_failed_checksum if !same_checksum_result && should_log_failures
@@ -42,8 +42,8 @@ module ScoutApm
           "#{Utils.get_host_os}_#{Utils.get_architecture}"
         end
 
-        def extracted_collector_path
-          context.config.value('collector_download_dir')
+        def collector_tar_path
+          "#{context.config.value('collector_download_dir')}/otelcol.tar.gz"
         end
       end
     end

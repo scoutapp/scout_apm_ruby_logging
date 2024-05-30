@@ -3,6 +3,7 @@
 require_relative './checksum'
 require_relative './configuration'
 require_relative './downloader'
+require_relative './extractor'
 
 module ScoutApm
   module Logging
@@ -13,13 +14,19 @@ module ScoutApm
 
         def initialize(context)
           @context = context
+
+          @checksum = Checksum.new(@context)
+          @configuration = Configuration.new(@context)
+          @downloader = Downloader.new(@context)
+          @extractor = Extractor.new(@context)
         end
 
         def setup!
-          Configuration.new(context).setup!
-          Downloader.new(context).run!
+          @configuration.setup!
+          @downloader.download!
+          @extractor.extract!
 
-          start_collector if Checksum.new(context).verified_checksum?(should_log_failures: true)
+          start_collector if verified_checksum_and_extracted?
         end
 
         def start_collector
@@ -29,6 +36,13 @@ module ScoutApm
         end
 
         private
+
+        def verified_checksum_and_extracted?
+          has_verfied_checksum = @checksum.verified_checksum?(should_log_failures: true)
+          has_extracted_content = @extractor.has_been_extracted?
+
+          has_verfied_checksum && has_extracted_content
+        end
 
         def extracted_collector_path
           context.config.value('collector_download_dir')

@@ -13,12 +13,12 @@ module ScoutApm
           @checksum = Checksum.new(context)
         end
 
-        def run!
+        def download!
+          # Already downloaded the collector. Noop.
           return if checksum.verified_checksum?
 
           # Account for issues such as failed extractions or download corruptions.
           download_collector
-          extract_collector
           verify_checksum
         rescue StandardError => e
           # Bypass Rubcop useless asignment rule.
@@ -52,11 +52,6 @@ module ScoutApm
               end
             end
           end
-        end
-
-        def extract_collector
-          Utils.ensure_directory_exists(destination)
-          system("tar -xzf #{destination} -C #{context.config.value('collector_download_dir')}")
         end
 
         private
