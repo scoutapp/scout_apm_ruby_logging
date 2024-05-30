@@ -86,7 +86,7 @@ module ScoutApm
         end
 
         def name
-          'defaults'
+          'dynamic'
         end
       end
 
@@ -120,7 +120,7 @@ module ScoutApm
         end
 
         def name
-          'dynamic'
+          'defaults'
         end
       end
     end
