@@ -8,10 +8,10 @@ module ScoutApm
         attr_reader :context
 
         KNOWN_CHECKSUMS = {
-          'darwin_amd64' => 'cd2ee4b88edafd2d4264f9e28834683c60dab21a46493b7398b806b43c7bee3a',
-          'darwin_arm64' => '320e5a3c282759238248a9dbb0a39980865713e4335685e1990400436a57cffa',
-          'linux_amd64' => '58474c2ae87fbc41a8acf20bfd3a4b82f2b13a26f767090062e42a6a857bfb89',
-          'linux_arm64' => '4d5e2f9685ecc46854d09fa38192c038597392e2565be9edd162810e80bd42de'
+          'darwin_amd64' => '5456734e124221e7ff775c52bd3693d05b3fac43ebe06b22aa5f220f1962ed8c',
+          'darwin_arm64' => 'f9564560798ac5c099885903f303fcda97b7ea649ec299e075b72f3805873879',
+          'linux_amd64' => '326772622016f7ff7e966a7ae8a0f439dc49a3d80b6d79a82b62608af447e851',
+          'linux_arm64' => '73d797817540363a37f27e32270f98053ed17b1df36df2d30db1715ce40f4cff'
         }.freeze
 
         def initialize(context)
