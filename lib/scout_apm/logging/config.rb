@@ -99,7 +99,7 @@ module ScoutApm
           'collector_pid_file' => '/tmp/scout_apm/scout_apm_otel_collector.pid',
           'collector_download_dir' => '/tmp/scout_apm',
           'collector_config_file' => '/tmp/scout_apm/config.yml',
-          'collector_version' => '0.100.0',
+          'collector_version' => '0.102.1',
           'monitored_logs' => [],
           'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
           'monitor_interval' => 60,
