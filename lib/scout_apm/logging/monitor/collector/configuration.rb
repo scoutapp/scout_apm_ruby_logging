@@ -12,6 +12,8 @@ module ScoutApm
         end
 
         def setup!
+          create_storage_directories
+
           create_config_file
         end
 
@@ -20,6 +22,13 @@ module ScoutApm
         end
 
         private
+
+        def create_storage_directories
+          # Sending queue storage directory
+          Utils.ensure_directory_exists(context.config.value('collector_sending_queue_storage_dir'))
+          # Offset storage directory
+          Utils.ensure_directory_exists(context.config.value('collector_offset_storage_dir'))
+        end
 
         def config_file
           context.config.value('collector_config_file')
@@ -30,6 +39,7 @@ module ScoutApm
             receivers:
               filelog:
                 include: [#{context.config.value('monitored_logs').join(',')}]
+                storage: file_storage/filelogreceiver
             processors:
               batch:
             exporters:
@@ -37,12 +47,21 @@ module ScoutApm
                 endpoint: #{context.config.value('logs_reporting_endpoint')}
                 headers:
                   x-telemetryhub-key: #{context.config.value('logging_ingest_key')}
+                sending_queue:
+                  storage: file_storage/otc
             extensions:
               health_check:
                 endpoint: #{health_check_endpoint}
+              file_storage/filelogreceiver:
+                directory: #{context.config.value('collector_offset_storage_dir')}
+              file_storage/otc:
+                directory: #{context.config.value('collector_sending_queue_storage_dir')}
+                timeout: 10s
             service:
               extensions:
                 - health_check
+                - file_storage/filelogreceiver
+                - file_storage/otc
               pipelines:
                 logs:
                   receivers:
