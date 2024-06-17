@@ -37,10 +37,9 @@ module ScoutApm
 
         process_information_parts = process_information.split(' ')
         process_information_status = process_information_parts[1]
-        process_information_command = process_information_parts[2]
 
         return false if process_information_status == 'Z'
-        return false unless process_information_command.include?(name)
+        return false unless process_information.include?(name)
 
         true
       end
