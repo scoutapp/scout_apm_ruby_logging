@@ -3,9 +3,11 @@ require 'spec_helper'
 describe ScoutApm::Logging do
   it 'checks the Rails lifecycle for creating the daemon and collector processes' do
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
-    make_basic_app
 
     pid_file = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file')
+    expect(File.exist?(pid_file)).to be_falsey
+
+    make_basic_app
 
     # Check if the PID file exists
     expect(File.exist?(pid_file)).to be_truthy
@@ -14,7 +16,7 @@ describe ScoutApm::Logging do
     pid = File.read(pid_file).to_i
 
     # Check if the process with the stored PID is running
-    ScoutApm::Logging::Utils.check_process_livelyness(pid, 'scout_apm_logging_monitor')
+    expect(ScoutApm::Logging::Utils.check_process_liveliness(pid, 'scout_apm_logging_monitor')).to be_truthy
 
     # Give the process time to initialize, download the collector, and start it
     wait_for_process_with_timeout!(
