@@ -3,7 +3,9 @@ task :default => :test
 task :test do
   unless system("docker image inspect rspec-runner > /dev/null 2>&1")
     puts "Building RSpec runner Docker image..."
-    system("docker build --build-arg RUBY_VERSION=$DOCKER_RUBY_VERSION -t rspec-runner .")
+
+    ruby_version = ENV.has_key?("DOCKER_RUBY_VERSION") ? ENV["DOCKER_RUBY_VERSION"] : "3.3"
+    system("docker build --build-arg RUBY_VERSION=#{ruby_version} -t rspec-runner .")
   end
 
   additional_options = ENV["debug"] ? "-it" : ""

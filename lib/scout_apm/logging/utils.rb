@@ -8,8 +8,9 @@ module ScoutApm
     module Utils
       # Takes a complete file path, and ensures that the directory structure exists.
       def self.ensure_directory_exists(file_path)
-        directory = File.dirname(file_path)
-        FileUtils.mkdir_p(directory) unless File.directory?(directory)
+        file_path = File.dirname(file_path) unless file_path[-1] == '/'
+
+        FileUtils.mkdir_p(file_path) unless File.directory?(file_path)
       end
 
       # TODO: Add support for other platforms

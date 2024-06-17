@@ -15,6 +15,8 @@ module ScoutApm
         monitor_logs
         monitor_pid_file
         monitor_data_file
+        collector_sending_queue_storage_dir
+        collector_offset_storage_dir
         collector_pid_file
         collector_download_dir
         collector_config_file
@@ -96,8 +98,10 @@ module ScoutApm
           'log_level' => 'info',
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
           'monitor_data_file' => '/tmp/scout_apm/scout_apm_log_monitor_data.json',
+          'collector_offset_storage_dir' => '/tmp/scout_apm/file_storage/receiver/',
+          'collector_sending_queue_storage_dir' => '/tmp/scout_apm/file_storage/otc/',
           'collector_pid_file' => '/tmp/scout_apm/scout_apm_otel_collector.pid',
-          'collector_download_dir' => '/tmp/scout_apm',
+          'collector_download_dir' => '/tmp/scout_apm/',
           'collector_config_file' => '/tmp/scout_apm/config.yml',
           'collector_version' => '0.102.1',
           'monitored_logs' => [],
