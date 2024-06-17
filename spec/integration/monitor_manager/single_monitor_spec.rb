@@ -20,12 +20,12 @@ describe ScoutApm::Logging do
 
     expect(File.exist?(pid_file)).to be_truthy
     original_pid = File.read(pid_file).to_i
-    expect(ScoutApm::Logging::Utils.check_process_livelyness(original_pid, 'scout_apm_logging_monitor')).to be_truthy
+    expect(ScoutApm::Logging::Utils.check_process_liveliness(original_pid, 'scout_apm_logging_monitor')).to be_truthy
 
     ScoutApm::Logging::MonitorManager.instance.setup!
     expect(File.exist?(pid_file)).to be_truthy
     updated_pid = File.read(pid_file).to_i
     expect(updated_pid).to eq(original_pid)
-    expect(ScoutApm::Logging::Utils.check_process_livelyness(original_pid, 'scout_apm_logging_monitor')).to be_truthy
+    expect(ScoutApm::Logging::Utils.check_process_liveliness(original_pid, 'scout_apm_logging_monitor')).to be_truthy
   end
 end

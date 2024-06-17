@@ -16,7 +16,7 @@ describe ScoutApm::Logging do
     pid = File.read(pid_file).to_i
 
     # Check if the process with the stored PID is running
-    expect(ScoutApm::Logging::Utils.check_process_livelyness(pid, 'scout_apm_logging_monitor')).to be_truthy
+    expect(ScoutApm::Logging::Utils.check_process_liveliness(pid, 'scout_apm_logging_monitor')).to be_truthy
 
     # Give the process time to initialize, download the collector, and start it
     wait_for_process_with_timeout!(

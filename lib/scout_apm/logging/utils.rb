@@ -30,7 +30,7 @@ module ScoutApm
         end
       end
 
-      def self.check_process_livelyness(pid, name)
+      def self.check_process_liveliness(pid, name)
         # Pipe to cat to prevent truncation of the output
         process_information = `ps -p #{pid} -o pid=,stat=,command= | cat`
         return false if process_information.empty?
