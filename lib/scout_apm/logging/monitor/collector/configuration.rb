@@ -70,6 +70,9 @@ module ScoutApm
                     - batch
                   exporters:
                     - otlp
+              telemetry:
+                metrics:
+                  level: none
           CONFIG
         end
 
