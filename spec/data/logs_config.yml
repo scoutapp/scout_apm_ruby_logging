@@ -1,0 +1,3 @@
+extensions:
+  file_storage/otc:
+    directory: /dev/null

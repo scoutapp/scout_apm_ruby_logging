@@ -35,6 +35,12 @@ Style/Documentation:
 Naming/PredicateName:
   Enabled: false
 
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
 Style/ClassVars:
   Enabled: false
 

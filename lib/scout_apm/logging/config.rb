@@ -25,6 +25,7 @@ module ScoutApm
         logs_reporting_endpoint
         monitor_interval
         delay_first_healthcheck
+        logs_config
       ].freeze
 
       SETTING_COERCIONS = {

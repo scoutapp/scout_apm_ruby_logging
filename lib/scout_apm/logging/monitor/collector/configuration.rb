@@ -3,8 +3,28 @@
 module ScoutApm
   module Logging
     module Collector
+      # Adds a method to Hash similar to that of the Rails deep_merge.
+      module HashDeepMerge
+        refine Hash do
+          def deep_merge(second)
+            merger = proc { |_, v1, v2|
+              if v1.is_a?(Hash) && v2.is_a?(Hash)
+                v1.merge(v2, &merger)
+              elsif v1.is_a?(Array) && v2.is_a?(Array)
+                v1 | v2
+              else
+                [:undefined, nil, :nil].include?(v2) ? v1 : v2
+              end
+            }
+            merge(second.to_h, &merger)
+          end
+        end
+      end
+
       # Creates the configuration to be used when launching the collector.
       class Configuration
+        using HashDeepMerge
+
         attr_reader :context
 
         def initialize(context)
@@ -18,7 +38,8 @@ module ScoutApm
         end
 
         def create_config_file
-          File.write(config_file, config_contents)
+          contents = YAML.dump(combined_contents)
+          File.write(config_file, contents)
         end
 
         private
@@ -28,6 +49,24 @@ module ScoutApm
           Utils.ensure_directory_exists(context.config.value('collector_sending_queue_storage_dir'))
           # Offset storage directory
           Utils.ensure_directory_exists(context.config.value('collector_offset_storage_dir'))
+        end
+
+        def combined_contents
+          default_contents = YAML.safe_load(config_contents)
+
+          default_contents.deep_merge(loaded_config_contents)
+        end
+
+        def loaded_config_contents
+          config_path = context.config.value('logs_config')
+
+          if config_path && File.exist?(config_path)
+            YAML.load_file(config_path) || {}
+          elsif File.exist?(assumed_config_file_path)
+            YAML.load_file(assumed_config_file_path) || {}
+          else
+            {}
+          end
         end
 
         def config_file
@@ -78,6 +117,10 @@ module ScoutApm
 
         def health_check_endpoint
           "localhost:#{context.health_check_port}"
+        end
+
+        def assumed_config_file_path
+          "#{context.application_root}/config/scout_logs_config.yml"
         end
       end
     end

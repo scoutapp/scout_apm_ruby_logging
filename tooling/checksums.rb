@@ -8,7 +8,6 @@ require 'digest'
 require 'fileutils'
 require 'net/http'
 require 'pp'
-require 'pry'
 
 DOUBLES = [
   'darwin_amd64',
