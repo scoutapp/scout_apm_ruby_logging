@@ -21,6 +21,8 @@ module ScoutApm
         context.config.log_settings(context.logger)
         context.logger.info('Setting up monitor daemon process')
 
+        add_exit_handler!
+
         determine_configuration_state
       end
 
@@ -32,6 +34,20 @@ module ScoutApm
           create_process
         else
           context.logger.info('Log monitoring disabled')
+          remove_processes
+        end
+      end
+
+      # With the use of fileoffsets in the collector, and the persistent queue of already collected logs,
+      # we can safely restart the collector. Due to the way fingerprinting of the files works, if the
+      # file path switches, but the beginning contents of the file remain the same, the file will be
+      # treated as the same file as before.
+      # If logs get rotated, the fingerprint changes, and the collector automatically detects this.
+      def add_exit_handler!
+        # Only remove/restart the monitor and collector if we are exiting from an app_server process.
+        return unless ScoutApm::Environment.instance.app_server != :null
+
+        at_exit do
           remove_processes
         end
       end
@@ -52,8 +68,6 @@ module ScoutApm
         writer.puts Rails.root if defined?(Rails)
         writer.puts Rails.env if defined?(Rails)
         writer.close
-
-        # TODO: Add exit handlers?
       end
 
       private
