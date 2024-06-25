@@ -2,20 +2,21 @@ require 'logger'
 
 require 'spec_helper'
 
-class ScoutTestLogger < ::Logger
-end
-
 describe ScoutApm::Logging::Loggers::Capture do
   it 'should find the logger, capture the log destination, and rotate collector configs' do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
     ENV['SCOUT_DELAY_FIRST_HEALTHCHECK'] = '10'
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
 
-    state_file_location = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_state_file')
-    collector_pid_location = ScoutApm::Logging::MonitorManager.instance.context.config.value('collector_pid_file')
+    context = ScoutApm::Logging::MonitorManager.instance.context
+
+    state_file_location = context.config.value('monitor_state_file')
+    collector_pid_location = context.config.value('collector_pid_file')
     ScoutApm::Logging::Utils.ensure_directory_exists(state_file_location)
 
     first_logger = ScoutTestLogger.new('/tmp/first_file.log')
+    first_logger_basename = File.basename(first_logger.instance_variable_get(:@logdev).filename.to_s)
+    first_logger_updated_path = File.join(context.config.value('proxy_log_dir'), first_logger_basename)
 
     # While we only use the ObjectSpace for the test logger, we need to wait for it to be captured.
     wait_for_logger
@@ -30,18 +31,18 @@ describe ScoutApm::Logging::Loggers::Capture do
 
     content = File.read(state_file_location)
     data = JSON.parse(content)
-    expect(data['monitored_logs']).to eq(['/tmp/first_file.log'])
+    expect(data['monitored_logs']).to eq([first_logger_updated_path])
 
     second_logger = ScoutTestLogger.new('/tmp/second_file.log')
+    second_logger_basename = File.basename(second_logger.instance_variable_get(:@logdev).filename.to_s)
+    second_logger_updated_path = File.join(context.config.value('proxy_log_dir'), second_logger_basename)
 
     similuate_railtie
 
     content = File.read(state_file_location)
     data = JSON.parse(content)
 
-    first_log_path = first_logger.instance_variable_get(:@logdev).filename.to_s
-    second_log_path = second_logger.instance_variable_get(:@logdev).filename.to_s
-    expect(data['monitored_logs'].sort).to eq([first_log_path, second_log_path])
+    expect(data['monitored_logs'].sort).to eq([first_logger_updated_path, second_logger_updated_path])
 
     # Need to wait for the delay first health check, next monitor interval to restart the collector, and then for
     # the collector to restart
