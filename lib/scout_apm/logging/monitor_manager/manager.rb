@@ -67,8 +67,8 @@ module ScoutApm
         Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", in: reader)
 
         reader.close
+        # TODO: Add support for Sinatra.
         writer.puts Rails.root if defined?(Rails)
-        writer.puts Rails.env if defined?(Rails)
         writer.close
       end
 
@@ -127,7 +127,7 @@ module ScoutApm
         begin
           Process.kill('TERM', process_id.to_i)
         rescue Errno::ENOENT, Errno::ESRCH => e
-          context.logger.error("Error occurred while removing collector process: #{e.message}")
+          context.logger.error("Error occurred while removing collector process from manager: #{e.message}")
         ensure
           File.delete(context.config.value('collector_pid_file'))
         end

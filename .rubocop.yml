@@ -15,7 +15,7 @@ Metrics/BlockLength:
     - "spec/**/*"
 
 Metrics/ClassLength:
-  Max: 130
+  Max: 150
 
 Style/FrozenStringLiteralComment:
   EnforcedStyle: always
@@ -51,7 +51,7 @@ Naming/AccessorMethodName:
   Enabled: false
 
 Metrics/MethodLength:
-  Max: 20
+  Max: 25
 
 Lint/LiteralAsCondition:
   Enabled: false

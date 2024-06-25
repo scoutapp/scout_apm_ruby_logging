@@ -10,6 +10,7 @@ require 'spec_helper'
 describe ScoutApm::Logging do
   it 'Should only create a single monitor daemon if manager is called multiple times' do
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
 
     pid_file = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file')
     expect(File.exist?(pid_file)).to be_falsey
@@ -21,7 +22,7 @@ describe ScoutApm::Logging do
         puts 'fork attempting to gain lock'
         ScoutApm::Logging::Utils.attempt_exclusive_lock(context) do
           puts 'obtained lock'
-          ScoutApm::Logging::MonitorManager.instance.setup!
+          ScoutApm::Logging::MonitorManager.new.setup!
         end
       end
     end
@@ -40,7 +41,7 @@ describe ScoutApm::Logging do
     # Another process comes in and tries to start it again
     ScoutApm::Logging::Utils.attempt_exclusive_lock(context) do
       puts 'obtained lock later on'
-      ScoutApm::Logging::MonitorManager.instance.setup!
+      ScoutApm::Logging::MonitorManager.new.setup!
     end
 
     expect(File.exist?(context.config.value('manager_lock_file'))).to be_falsey

@@ -8,6 +8,8 @@ require 'scout_apm/logging/context'
 require 'scout_apm/logging/utils'
 require 'scout_apm/logging/state'
 
+require 'scout_apm/logging/loggers/capture'
+
 require 'scout_apm/logging/monitor_manager/manager'
 
 module ScoutApm
@@ -17,9 +19,11 @@ module ScoutApm
       # If we are in a Rails environment, setup the monitor daemon manager.
       class RailTie < ::Rails::Railtie
         initializer 'scout_apm_logging.monitor' do
-          unless Utils.skip_setup?
-            context = ScoutApm::Logging::MonitorManager.instance.context
+          context = ScoutApm::Logging::MonitorManager.instance.context
 
+          Loggers::Capture.new(context).capture_log_locations!
+
+          unless Utils.skip_setup?
             Utils.attempt_exclusive_lock(context) do
               ScoutApm::Logging::MonitorManager.instance.setup!
             end

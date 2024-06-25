@@ -7,6 +7,8 @@ describe ScoutApm::Logging::Monitor do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
     ENV['SCOUT_DELAY_FIRST_HEALTHCHECK'] = '10'
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
+
     ScoutApm::Logging::Utils.ensure_directory_exists('/tmp/scout_apm/scout_apm_log_monitor.pid')
 
     ScoutApm::Logging::MonitorManager.instance.setup!
