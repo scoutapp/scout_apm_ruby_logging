@@ -38,28 +38,35 @@ module ScoutApm
         'health_check_port' => IntegerCoercion.new,
       }.freeze
 
+      # The bootstrapped, and initial config that we attach to the context. Will be swapped out by
+      # both the monitor and manager on initialization to the one with a file (which also has the dynamic
+      # and state configs).
+      def self.without_file(context)
+        overlays = [
+          ConfigEnvironment.new,
+          ConfigDefaults.new,
+          ConfigNull.new,
+        ]
+        new(context, overlays)
+      end
+
+
       def self.with_file(context, file_path = nil, config = {})
         overlays = [
           ConfigEnvironment.new,
           ConfigFile.new(context, file_path, config),
           ConfigDynamic.new,
           ConfigDefaults.new,
+          ConfigState.new(context),
           ConfigNull.new
         ]
-        instance = new(context, overlays)
-
-        # We need the current settings to determine where the state file is.
-        instance.add_overlay(ConfigState.new(instance), index: 3)
-
-        instance
+        new(context, overlays)
       end
 
+      # An easy to use accessor for other parts of the codebase.
       def flush_state!
-        State.flush_to_file!(self)
-      end
-
-      def add_overlay(overlay, index: -1)
-        @overlays.insert(index, overlay)
+        state_config = @overlays.find {|overlay| overlay.is_a? ConfigState }
+        state_config.flush_state!
       end
 
       def value(key)
@@ -109,10 +116,16 @@ module ScoutApm
       end
 
       class ConfigState
-        attr_reader :config
+        attr_reader :context
+        attr_reader :state
 
-        def initialize(config)
-          @config=config
+        def initialize(context)
+          @context=context
+
+          # Note, the config on the context we are passing in here comes from the Config.without_file. We
+          # won't be aware of a state file that was defined in a config file, but this would be a very
+          # rare thing to have happen as this is more of an internal config value.
+          @state = State.new(context)
 
           set_values_from_state
         end
@@ -143,10 +156,14 @@ module ScoutApm
           'state'
         end
 
+        def flush_state!
+          state.flush_to_file!
+        end
+
         private
 
         def set_values_from_state
-          data = State.load_state_from_file(config)
+          data = state.load_state_from_file
 
           return unless data
 

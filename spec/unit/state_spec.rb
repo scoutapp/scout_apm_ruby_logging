@@ -12,7 +12,7 @@ describe ScoutApm::Logging::Config do
 
     context.config.flush_state!
 
-    data = ScoutApm::Logging::Config::State.load_state_from_file(conf)
+    data = ScoutApm::Logging::Config::State.new(context).load_state_from_file
 
     expect(data['health_check_port']).to eq(context.config.value('health_check_port'))
     expect(data['monitored_logs']).to eq(context.config.value('monitored_logs'))
