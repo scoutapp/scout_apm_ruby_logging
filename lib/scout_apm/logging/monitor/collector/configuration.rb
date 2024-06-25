@@ -116,7 +116,7 @@ module ScoutApm
         end
 
         def health_check_endpoint
-          "localhost:#{context.health_check_port}"
+          "localhost:#{context.config.value('health_check_port')}"
         end
 
         def assumed_config_file_path
