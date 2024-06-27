@@ -8,6 +8,8 @@ require 'scout_apm/logging/context'
 require 'scout_apm/logging/utils'
 require 'scout_apm/logging/state'
 
+require 'scout_apm/logging/loggers/capture'
+
 require 'scout_apm/logging/monitor_manager/manager'
 
 module ScoutApm

@@ -55,17 +55,15 @@ module ScoutApm
           ConfigEnvironment.new,
           ConfigFile.new(context, file_path, config),
           ConfigDynamic.new,
-          ConfigDefaults.new,
           ConfigState.new(context),
+          ConfigDefaults.new,
           ConfigNull.new
         ]
         new(context, overlays)
       end
 
-      # An easy to use accessor for other parts of the codebase.
-      def flush_state!
+      def state
         state_config = @overlays.find {|overlay| overlay.is_a? ConfigState }
-        state_config.flush_state!
       end
 
       def value(key)
@@ -157,6 +155,10 @@ module ScoutApm
 
         def flush_state!
           state.flush_to_file!
+        end
+
+        def add_log_locations!(new_log_files)
+          state.flush_to_file!(new_log_files)
         end
 
         private
