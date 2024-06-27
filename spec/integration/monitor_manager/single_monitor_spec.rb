@@ -10,6 +10,7 @@ require 'spec_helper'
 describe ScoutApm::Logging do
   it 'Should only create a single monitor daemon if manager is called multiple times' do
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
 
     pid_file = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file')
     expect(File.exist?(pid_file)).to be_falsey
@@ -20,7 +21,7 @@ describe ScoutApm::Logging do
     original_pid = File.read(pid_file).to_i
     expect(ScoutApm::Logging::Utils.check_process_liveliness(original_pid, 'scout_apm_logging_monitor')).to be_truthy
 
-    ScoutApm::Logging::MonitorManager.instance.setup!
+    ScoutApm::Logging::MonitorManager.new.setup!
     expect(File.exist?(pid_file)).to be_truthy
     updated_pid = File.read(pid_file).to_i
     expect(updated_pid).to eq(original_pid)

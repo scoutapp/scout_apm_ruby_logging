@@ -34,13 +34,18 @@ module ScoutApm
 
         context.config = Config.with_file(context, determine_scout_config_filepath)
 
-        latest_state_sha = get_state_file_sha
+        @latest_state_sha = get_state_file_sha
       end
 
       def setup!
         context.config.logger.info('Monitor daemon process started')
 
         add_exit_handler!
+
+        unless has_logs_to_monitor?
+          context.config.logger.warn('No logs are set to be monitored. Please set the `monitored_logs` config setting. Exiting.')
+          return
+        end
 
         initiate_collector_setup! unless has_previous_collector_setup?
 
@@ -68,8 +73,12 @@ module ScoutApm
 
       private
 
-      def has_previous_collector_setup? # rubocop:disable Metrics/AbcSize
-        return false unless context.config.value("health_check_port")
+      def has_logs_to_monitor?
+        context.config.value('monitored_logs').any?
+      end
+
+      def has_previous_collector_setup?
+        return false unless context.config.value('health_check_port') != 0
 
         healthy_response = request_health_check_port("http://localhost:#{context.config.value('health_check_port')}/")
 
@@ -163,10 +172,7 @@ module ScoutApm
       end
 
       def check_state_change
-        puts latest_state_sha
         current_sha = get_state_file_sha
-        puts "CURRENT SHA:"
-        puts current_sha
 
         return if current_sha == latest_state_sha
 
@@ -182,7 +188,7 @@ module ScoutApm
       end
 
       def get_state_file_sha
-        `sha256sum #{context.config.value("monitor_state_file")}`.split(' ').first
+        `sha256sum #{context.config.value('monitor_state_file')}`.split(' ').first
       end
 
       def determine_scout_config_filepath

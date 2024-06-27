@@ -15,7 +15,7 @@ describe ScoutApm::Logging::Loggers::Capture do
     collector_pid_location = ScoutApm::Logging::MonitorManager.instance.context.config.value('collector_pid_file')
     ScoutApm::Logging::Utils.ensure_directory_exists(state_file_location)
 
-    first_logger = ScoutTestLogger.new('/tmp/first_file.log')
+    ScoutTestLogger.new('/tmp/first_file.log')
 
     ScoutApm::Logging::MonitorManager.instance.setup!
 
@@ -29,23 +29,23 @@ describe ScoutApm::Logging::Loggers::Capture do
     data = JSON.parse(content)
     expect(data['monitored_logs']).to eq(['/tmp/first_file.log'])
 
-    second_logger = ScoutTestLogger.new('/tmp/second_file.log')
+    ScoutTestLogger.new('/tmp/second_file.log')
 
     ScoutApm::Logging::MonitorManager.instance.setup!
 
     content = File.read(state_file_location)
     data = JSON.parse(content)
 
-    expect(data['monitored_logs'].sort).to eq(["/tmp/first_file.log", "/tmp/second_file.log"])
+    expect(data['monitored_logs'].sort).to eq(['/tmp/first_file.log', '/tmp/second_file.log'])
 
     # Need to wait for the delay first health check, next monitor interval to restart the collector, and then for
     # the collector to restart
-    sleep 40
+    sleep 60
 
     expect(`pgrep otelcol-contrib --runstates D,R,S`).not_to be_empty
     new_collector_pid = File.read(collector_pid_location)
-    
-    # Should have restarted the collector based on the change 
+
+    # Should have restarted the collector based on the change
     expect(new_collector_pid).not_to eq(collector_pid)
   end
 end

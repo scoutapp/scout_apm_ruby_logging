@@ -14,7 +14,7 @@ describe ScoutApm::Logging::Config do
   end
 
   it 'loads the state file into the config' do
-    ENV["SCOUT_MONITOR_STATE_FILE"] = File.expand_path('../data/state_file.json', __dir__)
+    ENV['SCOUT_MONITOR_STATE_FILE'] = File.expand_path('../data/state_file.json', __dir__)
 
     context = ScoutApm::Logging::Context.new
     conf_file = File.expand_path('../data/config_test_1.yml', __dir__)
