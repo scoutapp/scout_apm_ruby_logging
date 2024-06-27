@@ -6,8 +6,6 @@ module ScoutApm
     class Context
       # The root of the application.
       attr_accessor :application_root
-      # The environment of the application
-      attr_accessor :application_env
 
       # Initially start up without attempting to load a configuration file. We
       # need to be able to lookup configuration options like "application_root"

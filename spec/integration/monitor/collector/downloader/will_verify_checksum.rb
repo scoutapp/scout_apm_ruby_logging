@@ -5,6 +5,7 @@ require_relative '../../../../../lib/scout_apm/logging/monitor/collector/downloa
 describe ScoutApm::Logging::Collector::Downloader do
   it 'should validate checksum, and correct download if neccessary' do
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
 
     otelcol_contrib_path = '/tmp/scout_apm/otelcol-contrib'
     ScoutApm::Logging::Utils.ensure_directory_exists(otelcol_contrib_path)
@@ -22,7 +23,7 @@ describe ScoutApm::Logging::Collector::Downloader do
 
     ENV['SCOUT_MONITOR_LOGS'] = 'false'
 
-    ScoutApm::Logging::MonitorManager.instance.setup!
+    ScoutApm::Logging::MonitorManager.new.setup!
 
     sleep 5 # Give the process time to exit
 
@@ -32,7 +33,7 @@ describe ScoutApm::Logging::Collector::Downloader do
 
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
 
-    ScoutApm::Logging::MonitorManager.instance.setup!
+    ScoutApm::Logging::MonitorManager.new.setup!
 
     # Give the process time to exit, and for the healthcheck to restart it
     wait_for_process_with_timeout!('otelcol-contrib', 30)
