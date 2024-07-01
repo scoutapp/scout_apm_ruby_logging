@@ -43,6 +43,14 @@ module ScoutApm
 
         true
       end
+
+      def self.skip_setup?
+        [
+          ARGV.include?('assets:precompile'),
+          ARGV.include?('assets:clean'),
+          (defined?(::Rails::Console) && $stdout.isatty && $stdin.isatty)
+        ].any?
+      end
     end
   end
 end
