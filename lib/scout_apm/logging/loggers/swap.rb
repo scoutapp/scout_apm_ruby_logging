@@ -13,6 +13,8 @@ module ScoutApm
         end
 
         def add_logger_to_broadcast!
+          create_proxy_log_dir!
+
           new_file_logger = create_destination_logger
           log_instance.broadcast_to(new_file_logger)
 
