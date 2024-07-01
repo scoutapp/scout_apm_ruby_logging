@@ -20,6 +20,7 @@ module ScoutApm
         collector_pid_file
         collector_download_dir
         collector_config_file
+        collector_log_level
         collector_version
         monitored_logs
         logs_reporting_endpoint
@@ -97,6 +98,7 @@ module ScoutApm
       class ConfigDefaults
         DEFAULTS = {
           'log_level' => 'info',
+          'collector_log_level' => 'error',
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
           'monitor_data_file' => '/tmp/scout_apm/scout_apm_log_monitor_data.json',
           'collector_offset_storage_dir' => '/tmp/scout_apm/file_storage/receiver/',

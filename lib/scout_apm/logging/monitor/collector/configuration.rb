@@ -73,7 +73,7 @@ module ScoutApm
           context.config.value('collector_config_file')
         end
 
-        def config_contents
+        def config_contents # rubocop:disable Metrics/AbcSize
           <<~CONFIG
             receivers:
               filelog:
@@ -112,6 +112,8 @@ module ScoutApm
               telemetry:
                 metrics:
                   level: none
+                logs:
+                  level: #{context.config.value('collector_log_level')}
           CONFIG
         end
 
