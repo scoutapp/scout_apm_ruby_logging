@@ -2,6 +2,10 @@
 
 require 'logger'
 
+require_relative './swap'
+require_relative './proxy'
+require_relative './destination'
+
 module ScoutApm
   module Logging
     module Loggers
@@ -23,21 +27,8 @@ module ScoutApm
         end
 
         def capture_log_locations! # rubocop:disable Metrics/AbcSize
-          logger_instances = ObjectSpace.each_object(::Logger)
-                                        .select { |logger| KNOWN_LOGGERS.include? logger.class.to_s }
-
-          updated_log_locations = []
-          logger_instances.each do |log_instance|
-            log_devices = get_log_devices(log_instance)
-            log_locations = get_log_location(log_devices)
-
-            log_locations.each do |location|
-              # TODO: Add a proxy logger if we are logging to STDOUT
-              next if location == $stdout
-
-              updated_log_locations << location
-            end
-          end
+          updated_log_locations << swapped_in_location(Rails.logger) if defined?(Rails)
+          updated_log_locations << swapped_in_location(Sidekiq.logger) if defined?(Sidekiq)
 
           return if are_the_same_monitored_logs?(updated_log_locations)
 
@@ -45,6 +36,20 @@ module ScoutApm
         end
 
         private
+
+        def updated_log_locations
+          @updated_log_locations ||= Array.new
+        end
+
+        def swapped_in_location(log_instance)
+          swap = Swap.new(context, log_instance)
+
+          if log_instance.class.to_s == BROADCAST_LOGGER
+            swap.add_logger_to_broadcast!
+          else
+            swap.swap_in_proxy_logger!
+          end
+        end
 
         # In Rails 7.1, broadcast logger was added which allows sinking to multiple IO devices.
         def get_log_devices(log_instance)
@@ -59,7 +64,7 @@ module ScoutApm
           loggers.map { |logger| logger.instance_variable_get(:@logdev) }
         end
 
-        def get_log_location(log_devices)
+        def get_log_locations(log_devices)
           log_devices.map { |logdev| try(logdev, 'filename') || try(logdev, 'dev') }.compact
         end
 
@@ -68,6 +73,7 @@ module ScoutApm
           obj.public_send(method) if obj.respond_to? method
         end
 
+        # Should we safeguard and sort before comparison?
         def are_the_same_monitored_logs?(updated_log_locations)
           updated_log_locations == context.config.value('monitored_logs')
         end

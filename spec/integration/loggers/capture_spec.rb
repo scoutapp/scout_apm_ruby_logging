@@ -2,9 +2,6 @@ require 'logger'
 
 require 'spec_helper'
 
-class ScoutTestLogger < ::Logger
-end
-
 describe ScoutApm::Logging::Loggers::Capture do
   it 'should find the logger, capture the log destination, and rotate collector configs' do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'

@@ -27,6 +27,7 @@ module ScoutApm
         health_check_port
         delay_first_healthcheck
         logs_config
+        proxy_log_dir
       ].freeze
 
       SETTING_COERCIONS = {
@@ -188,7 +189,8 @@ module ScoutApm
           'monitored_logs' => [],
           'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
           'monitor_interval' => 60,
-          'delay_first_healthcheck' => 60
+          'delay_first_healthcheck' => 60,
+          'proxy_log_dir' => "/tmp/scout_apm/logs/"
         }.freeze
 
         def value(key)
