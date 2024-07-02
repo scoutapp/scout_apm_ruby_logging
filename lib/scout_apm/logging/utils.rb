@@ -30,6 +30,10 @@ module ScoutApm
         end
       end
 
+      def self.process_of_same_name_count?(command)
+        `ps aux | grep '#{command}' | grep -v grep | wc -l`.to_i
+      end
+
       def self.check_process_liveliness(pid, name)
         # Pipe to cat to prevent truncation of the output
         process_information = `ps -p #{pid} -o pid=,stat=,command= | cat`
@@ -42,6 +46,16 @@ module ScoutApm
         return false unless process_information.include?(name)
 
         true
+      end
+
+      def self.current_process_is_app_server?
+        # TODO: Add more app servers.
+        process_command = `ps -p #{Process.pid} -o command= | cat`.downcase
+        [
+          process_command.include?('puma'),
+          process_command.include?('unicorn'),
+          process_command.include?('passenger')
+        ].any?
       end
 
       def self.skip_setup?

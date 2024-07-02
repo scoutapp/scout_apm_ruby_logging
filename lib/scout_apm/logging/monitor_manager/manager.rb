@@ -44,15 +44,14 @@ module ScoutApm
       # treated as the same file as before.
       # If logs get rotated, the fingerprint changes, and the collector automatically detects this.
       def add_exit_handler!
-        # Only remove/restart the monitor and collector if we are exiting from an app_server process.
-        return unless ScoutApm::Environment.instance.app_server != :null
-
         at_exit do
-          remove_processes
+          # Only remove/restart the monitor and collector if we are exiting from an app_server process.
+          # We need to wait on this check, as the process command line changes at some point.
+          remove_processes if Utils.current_process_is_app_server?
         end
       end
 
-      def create_process # rubocop:disable Metrics/AbcSize
+      def create_process
         return if process_exists?
 
         Utils.ensure_directory_exists(context.config.value('monitor_pid_file'))
@@ -60,9 +59,9 @@ module ScoutApm
         reader, writer = IO.pipe
 
         gem_directory = File.expand_path('../../../..', __dir__)
-        daemon_process = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", pgroup: true, in: reader)
 
-        File.write(context.config.value('monitor_pid_file'), daemon_process)
+        # As we daemonize the process, we will write to the pid file within the process.
+        Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", in: reader)
 
         reader.close
         writer.puts Rails.root if defined?(Rails)

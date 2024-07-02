@@ -15,7 +15,7 @@ Metrics/BlockLength:
     - "spec/**/*"
 
 Metrics/ClassLength:
-  Max: 120
+  Max: 130
 
 Style/FrozenStringLiteralComment:
   EnforcedStyle: always

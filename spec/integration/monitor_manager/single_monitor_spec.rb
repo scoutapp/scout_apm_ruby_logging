@@ -15,6 +15,7 @@ describe ScoutApm::Logging do
     expect(File.exist?(pid_file)).to be_falsey
 
     ScoutApm::Logging::MonitorManager.instance.setup!
+    wait_for_process_with_timeout!('otelcol-contrib', 20)
 
     expect(File.exist?(pid_file)).to be_truthy
     original_pid = File.read(pid_file).to_i
