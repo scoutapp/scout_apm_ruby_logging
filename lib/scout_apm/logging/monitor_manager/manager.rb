@@ -25,7 +25,7 @@ module ScoutApm
 
         determine_configuration_state
 
-        # Continue to hold the exclusive write until we have written the PID file.
+        # Continue to hold the lock until we have written the PID file.
         ensure_monitor_pid_file_exists
       end
 

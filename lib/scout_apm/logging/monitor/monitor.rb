@@ -34,7 +34,7 @@ module ScoutApm
         Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
         context.config = Config.with_file(context, determine_scout_config_filepath)
 
-        check_process_then_daemonize!
+        daemonize_process!
       end
 
       def setup!
@@ -70,9 +70,8 @@ module ScoutApm
 
       private
 
-      def check_process_then_daemonize!
+      def daemonize_process!
         # Similar to that of Process.daemon, but we want to keep the dir, STDOUT and STDERR.
-        # Relevant: https://workingwithruby.com/wwup/daemons/
         exit if fork
         Process.setsid
         exit if fork
