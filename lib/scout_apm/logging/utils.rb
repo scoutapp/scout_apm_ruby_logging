@@ -44,12 +44,42 @@ module ScoutApm
         true
       end
 
+      def self.current_process_is_app_server?
+        # TODO: Add more app servers.
+        process_command = `ps -p #{Process.pid} -o command= | cat`.downcase
+        [
+          process_command.include?('puma'),
+          process_command.include?('unicorn'),
+          process_command.include?('passenger')
+        ].any?
+      end
+
       def self.skip_setup?
         [
           ARGV.include?('assets:precompile'),
           ARGV.include?('assets:clean'),
           (defined?(::Rails::Console) && $stdout.isatty && $stdin.isatty)
         ].any?
+      end
+
+      def self.attempt_exclusive_lock(context)
+        lock_file = context.config.value('manager_lock_file')
+        ensure_directory_exists(lock_file)
+
+        begin
+          file = File.open(lock_file, File::RDWR | File::CREAT | File::EXCL)
+        rescue Errno::EEXIST
+          context.logger.error('Manager lock file held, continuing.')
+          return
+        end
+
+        # Ensure the lock file is deleted when the block completes
+        begin
+          yield
+        ensure
+          file.close
+          File.delete(lock_file) if File.exist?(lock_file)
+        end
       end
     end
   end

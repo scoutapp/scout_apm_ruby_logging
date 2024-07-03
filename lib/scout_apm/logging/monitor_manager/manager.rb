@@ -24,6 +24,9 @@ module ScoutApm
         add_exit_handler!
 
         determine_configuration_state
+
+        # Continue to hold the lock until we have written the PID file.
+        ensure_monitor_pid_file_exists
       end
 
       def determine_configuration_state
@@ -44,15 +47,14 @@ module ScoutApm
       # treated as the same file as before.
       # If logs get rotated, the fingerprint changes, and the collector automatically detects this.
       def add_exit_handler!
-        # Only remove/restart the monitor and collector if we are exiting from an app_server process.
-        return unless ScoutApm::Environment.instance.app_server != :null
-
         at_exit do
-          remove_processes
+          # Only remove/restart the monitor and collector if we are exiting from an app_server process.
+          # We need to wait on this check, as the process command line changes at some point.
+          remove_processes if Utils.current_process_is_app_server?
         end
       end
 
-      def create_process # rubocop:disable Metrics/AbcSize
+      def create_process
         return if process_exists?
 
         Utils.ensure_directory_exists(context.config.value('monitor_pid_file'))
@@ -60,9 +62,9 @@ module ScoutApm
         reader, writer = IO.pipe
 
         gem_directory = File.expand_path('../../../..', __dir__)
-        daemon_process = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", pgroup: true, in: reader)
 
-        File.write(context.config.value('monitor_pid_file'), daemon_process)
+        # As we daemonize the process, we will write to the pid file within the process.
+        Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", in: reader)
 
         reader.close
         writer.puts Rails.root if defined?(Rails)
@@ -71,6 +73,24 @@ module ScoutApm
       end
 
       private
+
+      def ensure_monitor_pid_file_exists
+        start_time = Time.now
+        # We don't want to hold up the initial Rails boot time for very long.
+        timeout_seconds = 0.1
+
+        # Naive benchmarks show this taking ~0.01 seconds.
+        loop do
+          break if File.exist?(context.config.value('monitor_pid_file'))
+
+          if Time.now - start_time > timeout_seconds
+            context.logger.warn('Unable to verify monitor PID file write. Releasing lock.')
+            break
+          end
+
+          sleep 0.01
+        end
+      end
 
       def process_exists?
         return false unless File.exist? context.config.value('monitor_pid_file')

@@ -16,7 +16,13 @@ module ScoutApm
       # If we are in a Rails environment, setup the monitor daemon manager.
       class RailTie < ::Rails::Railtie
         initializer 'scout_apm_logging.monitor' do
-          ScoutApm::Logging::MonitorManager.instance.setup! unless Utils.skip_setup?
+          unless Utils.skip_setup?
+            context = ScoutApm::Logging::MonitorManager.instance.context
+
+            Utils.attempt_exclusive_lock(context) do
+              ScoutApm::Logging::MonitorManager.instance.setup!
+            end
+          end
         end
       end
     end

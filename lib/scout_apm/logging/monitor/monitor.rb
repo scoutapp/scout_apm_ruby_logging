@@ -33,6 +33,8 @@ module ScoutApm
 
         Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
         context.config = Config.with_file(context, determine_scout_config_filepath)
+
+        daemonize_process!
       end
 
       def setup!
@@ -67,6 +69,16 @@ module ScoutApm
       end
 
       private
+
+      def daemonize_process!
+        # Similar to that of Process.daemon, but we want to keep the dir, STDOUT and STDERR.
+        exit if fork
+        Process.setsid
+        exit if fork
+        $stdin.reopen '/dev/null'
+
+        File.write(context.config.value('monitor_pid_file'), Process.pid)
+      end
 
       # If we have a previous monitor data file, load it into the context.
       def load_previous_monitor_data!

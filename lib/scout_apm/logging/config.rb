@@ -21,6 +21,7 @@ module ScoutApm
         collector_download_dir
         collector_config_file
         collector_version
+        manager_lock_file
         monitored_logs
         logs_reporting_endpoint
         monitor_interval
@@ -105,6 +106,7 @@ module ScoutApm
           'collector_download_dir' => '/tmp/scout_apm/',
           'collector_config_file' => '/tmp/scout_apm/config.yml',
           'collector_version' => '0.102.1',
+          'manager_lock_file' => '/tmp/scout_apm/monitor_lock_file.lock',
           'monitored_logs' => [],
           'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
           'monitor_interval' => 60,
