@@ -24,6 +24,9 @@ module ScoutApm
         add_exit_handler!
 
         determine_configuration_state
+
+        # Continue to hold the exclusive write until we have written the PID file.
+        ensure_monitor_pid_file_exists
       end
 
       def determine_configuration_state
@@ -70,6 +73,24 @@ module ScoutApm
       end
 
       private
+
+      def ensure_monitor_pid_file_exists
+        start_time = Time.now
+        # We don't want to hold up the initial Rails boot time for very long.
+        timeout_seconds = 0.1
+
+        # Naive benchmarks show this taking ~0.01 seconds.
+        loop do
+          break if File.exist?(context.config.value('monitor_pid_file'))
+
+          if Time.now - start_time > timeout_seconds
+            context.logger.warn('Unable to verify monitor PID file write. Releasing lock.')
+            break
+          end
+
+          sleep 0.01
+        end
+      end
 
       def process_exists?
         return false unless File.exist? context.config.value('monitor_pid_file')

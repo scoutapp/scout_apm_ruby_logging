@@ -30,10 +30,6 @@ module ScoutApm
         end
       end
 
-      def self.process_of_same_name_count?(command)
-        `ps aux | grep '#{command}' | grep -v grep | wc -l`.to_i
-      end
-
       def self.check_process_liveliness(pid, name)
         # Pipe to cat to prevent truncation of the output
         process_information = `ps -p #{pid} -o pid=,stat=,command= | cat`

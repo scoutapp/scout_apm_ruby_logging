@@ -70,10 +70,6 @@ module ScoutApm
 
       private
 
-      def exit_if_we_arent_only_monitor
-        exit if Utils.process_of_same_name_count?($PROGRAM_NAME) > 1
-      end
-
       def check_process_then_daemonize!
         # Similar to that of Process.daemon, but we want to keep the dir, STDOUT and STDERR.
         # Relevant: https://workingwithruby.com/wwup/daemons/
@@ -81,8 +77,6 @@ module ScoutApm
         Process.setsid
         exit if fork
         $stdin.reopen '/dev/null'
-
-        exit_if_we_arent_only_monitor
 
         File.write(context.config.value('monitor_pid_file'), Process.pid)
       end
