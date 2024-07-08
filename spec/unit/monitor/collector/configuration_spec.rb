@@ -52,9 +52,9 @@ describe ScoutApm::Logging::Collector::Configuration do
   private
 
   def setup_collector_config!(context)
+    ENV['SCOUT_MONITOR_STATE_FILE'] = File.expand_path('../../../data/state_file.json', __dir__)
     conf_file = File.expand_path('../../../data/mock_config.yml', __dir__)
     context.config = ScoutApm::Logging::Config.with_file(context, conf_file)
-    context.health_check_port = 1234
 
     ScoutApm::Logging::Utils.ensure_directory_exists(context.config.value('collector_config_file'))
 

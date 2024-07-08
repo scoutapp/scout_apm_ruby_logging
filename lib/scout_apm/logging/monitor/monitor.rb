@@ -11,6 +11,7 @@ require_relative '../logger'
 require_relative '../context'
 require_relative '../config'
 require_relative '../utils'
+require_relative '../state'
 require_relative './collector/manager'
 
 module ScoutApm
@@ -39,8 +40,6 @@ module ScoutApm
 
       def setup!
         context.config.logger.info('Monitor daemon process started')
-
-        load_previous_monitor_data!
 
         add_exit_handler!
 
@@ -80,23 +79,13 @@ module ScoutApm
         File.write(context.config.value('monitor_pid_file'), Process.pid)
       end
 
-      # If we have a previous monitor data file, load it into the context.
-      def load_previous_monitor_data!
-        return unless File.exist?(context.config.value('monitor_data_file'))
+      def has_previous_collector_setup?
+        return false unless context.config.value('health_check_port') != 0
 
-        file_contents = File.read(context.config.value('monitor_data_file'))
-        data = JSON.parse(file_contents)
-        context.stored_data = data
-      end
-
-      def has_previous_collector_setup? # rubocop:disable Metrics/AbcSize
-        return false unless context.stored_data&.key?('health_check_port')
-
-        healthy_response = request_health_check_port("http://localhost:#{context.stored_data['health_check_port']}/")
+        healthy_response = request_health_check_port("http://localhost:#{context.config.value('health_check_port')}/")
 
         if healthy_response
-          context.health_check_port = context.stored_data['health_check_port']
-          context.logger.info("Collector already setup on port #{context.stored_data['health_check_port']}")
+          context.logger.info("Collector already setup on port #{context.config.value('health_check_port')}")
         else
           context.logger.info('Setting up new collector')
         end
@@ -138,12 +127,8 @@ module ScoutApm
           health_check_port += 1
         end
 
-        # TODO: If we start to use the monitor data file more, we should move the management of the data file
-        # into its own class.
-        data = { health_check_port: health_check_port }
-        File.write(context.config.value('monitor_data_file'), JSON.pretty_generate(data))
-
-        context.health_check_port = health_check_port
+        Config::ConfigDynamic.set_value('health_check_port', health_check_port)
+        context.config.flush_state!
       end
 
       def request_health_check_port(endpoint)
@@ -166,7 +151,7 @@ module ScoutApm
 
       def check_collector_health
         context.logger.debug('Checking collector health')
-        collector_health_endpoint = "http://localhost:#{context.health_check_port}/"
+        collector_health_endpoint = "http://localhost:#{context.config.value('health_check_port')}/"
 
         healthy_response = request_health_check_port(collector_health_endpoint)
 

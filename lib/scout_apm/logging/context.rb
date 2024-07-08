@@ -8,10 +8,6 @@ module ScoutApm
       attr_accessor :application_root
       # The environment of the application
       attr_accessor :application_env
-      # The health check port for the collector. This is dynamically derived based on available ports.
-      attr_accessor :health_check_port
-      # Previous derived data for the monitor daemon. For example, the dervied health check port.
-      attr_accessor :stored_data
 
       # Initially start up without attempting to load a configuration file. We
       # need to be able to lookup configuration options like "application_root"
@@ -39,9 +35,6 @@ module ScoutApm
         @config = config
 
         @logger = nil
-
-        # TODO
-        # log_configuration_settings
       end
     end
 
