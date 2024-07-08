@@ -94,20 +94,22 @@ module ScoutApm
 
       # Dynamically set state based on the application.
       class ConfigDynamic
-        @@values_to_set = {
+        @values_to_set = {
           'health_check_port': nil
         }
 
-        def self.set_value(key, value)
-          @@values_to_set[key] = value
+        class << self
+          def set_value(key, value)
+            @values_to_set[key] = value
+          end
         end
 
         def value(key)
-          @@values_to_set[key]
+          self.class.values_to_set[key]
         end
 
         def has_key?(key)
-          @@values_to_set.key?(key)
+          self.class.values_to_set.key?(key)
         end
 
         def name
@@ -117,6 +119,21 @@ module ScoutApm
 
       # The multi process configuration state.
       class ConfigState
+        @values_to_set = {
+          'monitored_logs': [],
+          'health_check_port': nil
+        }
+
+        class << self
+          def set_value(key, value)
+            @values_to_set[key] = value
+          end
+
+          def get_values_to_set
+            @values_to_set.keys.map(&:to_s)
+          end
+        end
+
         attr_reader :context, :state
 
         def initialize(context)
@@ -130,25 +147,12 @@ module ScoutApm
           set_values_from_state
         end
 
-        @@values_to_set = {
-          'monitored_logs': [],
-          'health_check_port': nil
-        }
-
-        def self.set_value(key, value)
-          @@values_to_set[key] = value
-        end
-
-        def self.get_values_to_set
-          @@values_to_set.keys.map(&:to_s)
-        end
-
         def value(key)
-          @@values_to_set[key]
+          self.class.values_to_set[key]
         end
 
         def has_key?(key)
-          @@values_to_set.key?(key)
+          self.class.values_to_set.key?(key)
         end
 
         def name
