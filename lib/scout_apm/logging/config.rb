@@ -92,13 +92,15 @@ module ScoutApm
         end
       end
 
-      # Dynamically set state based on the application.
+      # Dynamically set state based on the application configuration.
       class ConfigDynamic
         @values_to_set = {
           'health_check_port': nil
         }
 
         class << self
+          attr_reader :values_to_set
+
           def set_value(key, value)
             @values_to_set[key] = value
           end
@@ -125,6 +127,8 @@ module ScoutApm
         }
 
         class << self
+          attr_reader :values_to_set
+
           def set_value(key, value)
             @values_to_set[key] = value
           end

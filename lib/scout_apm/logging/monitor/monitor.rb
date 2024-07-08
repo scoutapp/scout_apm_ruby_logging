@@ -69,8 +69,18 @@ module ScoutApm
 
       private
 
+      def daemonize_process!
+        # Similar to that of Process.daemon, but we want to keep the dir, STDOUT and STDERR.
+        exit if fork
+        Process.setsid
+        exit if fork
+        $stdin.reopen '/dev/null'
+
+        File.write(context.config.value('monitor_pid_file'), Process.pid)
+      end
+
       def has_previous_collector_setup?
-        return false unless context.config.value('health_check_port')
+        return false unless context.config.value('health_check_port') != 0
 
         healthy_response = request_health_check_port("http://localhost:#{context.config.value('health_check_port')}/")
 
