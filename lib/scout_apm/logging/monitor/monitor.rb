@@ -69,8 +69,8 @@ module ScoutApm
 
       private
 
-      def has_previous_collector_setup? # rubocop:disable Metrics/AbcSize
-        return false unless context.config.value("health_check_port")
+      def has_previous_collector_setup?
+        return false unless context.config.value('health_check_port')
 
         healthy_response = request_health_check_port("http://localhost:#{context.config.value('health_check_port')}/")
 

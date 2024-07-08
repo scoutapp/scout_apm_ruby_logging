@@ -35,7 +35,7 @@ module ScoutApm
         'monitored_logs' => JsonCoercion.new,
         'monitor_interval' => IntegerCoercion.new,
         'delay_first_healthcheck' => IntegerCoercion.new,
-        'health_check_port' => IntegerCoercion.new,
+        'health_check_port' => IntegerCoercion.new
       }.freeze
 
       # The bootstrapped, and initial config that we attach to the context. Will be swapped out by
@@ -45,11 +45,10 @@ module ScoutApm
         overlays = [
           ConfigEnvironment.new,
           ConfigDefaults.new,
-          ConfigNull.new,
+          ConfigNull.new
         ]
         new(context, overlays)
       end
-
 
       def self.with_file(context, file_path = nil, config = {})
         overlays = [
@@ -65,7 +64,7 @@ module ScoutApm
 
       # An easy to use accessor for other parts of the codebase.
       def flush_state!
-        state_config = @overlays.find {|overlay| overlay.is_a? ConfigState }
+        state_config = @overlays.find { |overlay| overlay.is_a? ConfigState }
         state_config.flush_state!
       end
 
@@ -93,9 +92,10 @@ module ScoutApm
         end
       end
 
+      # Dynamically set state based on the application.
       class ConfigDynamic
         @@values_to_set = {
-          'health_check_port': nil,
+          'health_check_port': nil
         }
 
         def self.set_value(key, value)
@@ -115,12 +115,12 @@ module ScoutApm
         end
       end
 
+      # The multi process configuration state.
       class ConfigState
-        attr_reader :context
-        attr_reader :state
+        attr_reader :context, :state
 
         def initialize(context)
-          @context=context
+          @context = context
 
           # Note, the config on the context we are passing in here comes from the Config.without_file. We
           # won't be aware of a state file that was defined in a config file, but this would be a very
@@ -132,7 +132,7 @@ module ScoutApm
 
         @@values_to_set = {
           'monitored_logs': [],
-          'health_check_port': nil,
+          'health_check_port': nil
         }
 
         def self.set_value(key, value)
@@ -142,7 +142,6 @@ module ScoutApm
         def self.get_values_to_set
           @@values_to_set.keys.map(&:to_s)
         end
-
 
         def value(key)
           @@values_to_set[key]
