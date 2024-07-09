@@ -2,7 +2,7 @@
 
 module ScoutApm
   module Logging
-    # Custom logger for ScoutApm Logging.
+    # Custom internal logger for ScoutApm Logging.
     class Logger < ScoutApm::Logger
       private
 

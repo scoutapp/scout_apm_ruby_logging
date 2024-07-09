@@ -19,6 +19,7 @@ module ScoutApm
     # Entry point for the monitor daemon process.
     class Monitor
       attr_reader :context
+      attr_accessor :latest_state_sha
 
       @@instance = nil
 
@@ -29,11 +30,12 @@ module ScoutApm
       def initialize
         @context = Context.new
 
-        @context.application_root = $stdin.gets&.chomp
-        @context.application_env = $stdin.gets&.chomp
+        context.application_root = $stdin.gets&.chomp
 
-        Config::ConfigDynamic.set_value('monitored_logs', [assumed_rails_log_path])
+        # Load in the dynamic and state based config settings.
         context.config = Config.with_file(context, determine_scout_config_filepath)
+
+        @latest_state_sha = get_state_file_sha
 
         daemonize_process!
       end
@@ -42,6 +44,11 @@ module ScoutApm
         context.config.logger.info('Monitor daemon process started')
 
         add_exit_handler!
+
+        unless has_logs_to_monitor?
+          context.config.logger.warn('No logs are set to be monitored. Please set the `monitored_logs` config setting. Exiting.')
+          return
+        end
 
         initiate_collector_setup! unless has_previous_collector_setup?
 
@@ -56,9 +63,9 @@ module ScoutApm
         loop do
           sleep context.config.value('monitor_interval')
 
-          # TODO: Add some sort of delay before first healthcheck.
-          # If monitor_interval is too low, we could be checking the collector health before it's even started.
           check_collector_health
+
+          check_state_change
         end
       end
 
@@ -77,6 +84,10 @@ module ScoutApm
         $stdin.reopen '/dev/null'
 
         File.write(context.config.value('monitor_pid_file'), Process.pid)
+      end
+
+      def has_logs_to_monitor?
+        context.config.value('monitored_logs').any?
       end
 
       def has_previous_collector_setup?
@@ -128,7 +139,7 @@ module ScoutApm
         end
 
         Config::ConfigDynamic.set_value('health_check_port', health_check_port)
-        context.config.flush_state!
+        context.config.state.flush_state!
       end
 
       def request_health_check_port(endpoint)
@@ -158,6 +169,30 @@ module ScoutApm
         initiate_collector_setup! unless healthy_response
       end
 
+      def remove_collector_process # rubocop:disable Metrics/AbcSize
+        return unless File.exist? context.config.value('collector_pid_file')
+
+        process_id = File.read(context.config.value('collector_pid_file'))
+        return if process_id.empty?
+
+        begin
+          Process.kill('TERM', process_id.to_i)
+        rescue Errno::ENOENT, Errno::ESRCH => e
+          context.logger.error("Error occurred while removing collector process from monitor: #{e.message}")
+        ensure
+          File.delete(context.config.value('collector_pid_file'))
+        end
+      end
+
+      def check_state_change
+        current_sha = get_state_file_sha
+
+        return if current_sha == latest_state_sha
+
+        remove_collector_process
+        initiate_collector_setup!
+      end
+
       def add_exit_handler!
         at_exit do
           # There may not be a file to delete, as the monitor manager ensures cleaning it up when monitoring is disabled.
@@ -165,12 +200,14 @@ module ScoutApm
         end
       end
 
-      def determine_scout_config_filepath
-        "#{context.application_root}/config/scout_apm.yml"
+      def get_state_file_sha
+        return nil unless File.exist?(context.config.value('monitor_state_file'))
+
+        `sha256sum #{context.config.value('monitor_state_file')}`.split(' ').first
       end
 
-      def assumed_rails_log_path
-        context.application_root + "/log/#{context.application_env}.log"
+      def determine_scout_config_filepath
+        "#{context.application_root}/config/scout_apm.yml"
       end
     end
   end

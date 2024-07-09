@@ -55,17 +55,15 @@ module ScoutApm
           ConfigEnvironment.new,
           ConfigFile.new(context, file_path, config),
           ConfigDynamic.new,
-          ConfigDefaults.new,
           ConfigState.new(context),
+          ConfigDefaults.new,
           ConfigNull.new
         ]
         new(context, overlays)
       end
 
-      # An easy to use accessor for other parts of the codebase.
-      def flush_state!
-        state_config = @overlays.find { |overlay| overlay.is_a? ConfigState }
-        state_config.flush_state!
+      def state
+        @overlays.find { |overlay| overlay.is_a? ConfigState }
       end
 
       def value(key)
@@ -92,7 +90,7 @@ module ScoutApm
         end
       end
 
-      # Dynamically set state based on the application configuration.
+      # Dynamically set state based on the application.
       class ConfigDynamic
         @values_to_set = {
           'health_check_port': nil
@@ -119,7 +117,7 @@ module ScoutApm
         end
       end
 
-      # The multi process configuration state.
+      # State that is persisted and communicated upon by multiple processes.
       class ConfigState
         @values_to_set = {
           'monitored_logs': [],
@@ -165,6 +163,10 @@ module ScoutApm
 
         def flush_state!
           state.flush_to_file!
+        end
+
+        def add_log_locations!(updated_log_locations)
+          state.flush_to_file!(updated_log_locations)
         end
 
         private

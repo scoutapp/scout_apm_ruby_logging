@@ -5,6 +5,8 @@ require_relative '../../../lib/scout_apm/logging/monitor/collector/manager'
 describe ScoutApm::Logging::Collector::Manager do
   it 'should recreate the monitor process if monitor.pid file is errant' do
     ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
+
     ScoutApm::Logging::Utils.ensure_directory_exists('/tmp/scout_apm/scout_apm_log_monitor.pid')
 
     # A high enough number to not be a PID of a running process

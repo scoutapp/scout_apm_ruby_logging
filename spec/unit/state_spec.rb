@@ -10,7 +10,7 @@ describe ScoutApm::Logging::Config do
 
     ScoutApm::Logging::Config::ConfigDynamic.set_value('health_check_port', 1234)
 
-    context.config.flush_state!
+    context.config.state.flush_state!
 
     data = ScoutApm::Logging::Config::State.new(context).load_state_from_file
 
