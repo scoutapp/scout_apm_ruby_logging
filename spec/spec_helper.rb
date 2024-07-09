@@ -11,6 +11,15 @@ require "action_view/railtie"
 # Require after rails, to ensure the railtie is ran
 require 'scout_apm_logging'
 
+class TestLoggerWrapper
+  class << self
+    attr_accessor :logger
+  end
+end
+
+class ScoutTestLogger < ::Logger
+end
+
 RSpec.configure do |config|
   ENV["SCOUT_LOG_LEVEL"] = "debug"
 
