@@ -24,6 +24,8 @@ module ScoutApm
 
         def create_logger!
           # Defaults are 7 files with 10 MiB.
+          # We create the file in order to prevent a creation header log.
+          File.new(determine_file_path, 'w+')
           FileLogger.new(determine_file_path, LOG_AGE, LOG_SIZE)
         end
 

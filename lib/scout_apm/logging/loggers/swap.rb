@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'json'
 require 'logger'
 
 module ScoutApm
@@ -33,6 +34,8 @@ module ScoutApm
 
         def add_logger_to_broadcast!
           @new_file_logger = create_destination_logger
+          @new_file_logger.formatter = simple_json_formatter
+
           log_instance.broadcast_to(new_file_logger)
         end
 
@@ -47,6 +50,7 @@ module ScoutApm
           updated_original_logger.formatter = log_instance.formatter
 
           @new_file_logger = create_destination_logger
+          @new_file_logger.formatter = simple_json_formatter
 
           # First logger needs to be the original logger for the return value of relayed calls.
           proxy_logger.add(updated_original_logger)
@@ -69,6 +73,12 @@ module ScoutApm
 
         def create_proxy_log_dir!
           Utils.ensure_directory_exists(context.config.value('proxy_log_dir'))
+        end
+
+        def simple_json_formatter
+          proc do |severity, datetime, progname, msg|
+            "#{{ severity: severity, datetime: datetime, progname: progname, msg: msg }.to_json}\n"
+          end
         end
       end
     end

@@ -79,7 +79,16 @@ module ScoutApm
               filelog:
                 include: [#{context.config.value('monitored_logs').join(',')}]
                 storage: file_storage/filelogreceiver
+                operators:
+                  - type: json_parser
+                    severity:
+                      parse_from: attributes.severity
             processors:
+              transform:
+                log_statements:
+                  - context: log
+                    statements:
+                    - 'set(body, attributes["msg"])'
               batch:
             exporters:
               otlp:
@@ -106,6 +115,7 @@ module ScoutApm
                   receivers:
                     - filelog
                   processors:
+                    - transform
                     - batch
                   exporters:
                     - otlp
