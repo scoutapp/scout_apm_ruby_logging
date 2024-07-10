@@ -2,6 +2,9 @@
 
 require 'logger'
 
+require_relative './formatter'
+require_relative './logger'
+
 module ScoutApm
   module Logging
     module Loggers
@@ -32,7 +35,9 @@ module ScoutApm
         private
 
         def add_logger_to_broadcast!
-          @new_file_logger = create_destination_logger
+          @new_file_logger = create_file_logger
+          @new_file_logger.formatter = Loggers::Formatter.new
+
           log_instance.broadcast_to(new_file_logger)
         end
 
@@ -46,7 +51,8 @@ module ScoutApm
           updated_original_logger = ::Logger.new(original_logdevice)
           updated_original_logger.formatter = log_instance.formatter
 
-          @new_file_logger = create_destination_logger
+          @new_file_logger = create_file_logger
+          @new_file_logger.formatter = Loggers::Formatter.new
 
           # First logger needs to be the original logger for the return value of relayed calls.
           proxy_logger.add(updated_original_logger)
@@ -63,8 +69,8 @@ module ScoutApm
           end
         end
 
-        def create_destination_logger
-          Destination.new(context, log_instance).create_logger!
+        def create_file_logger
+          Loggers::Logger.new(context, log_instance).create_logger!
         end
 
         def create_proxy_log_dir!
