@@ -4,7 +4,6 @@ require 'logger'
 
 require_relative './swap'
 require_relative './proxy'
-require_relative './destination'
 
 module ScoutApm
   module Logging

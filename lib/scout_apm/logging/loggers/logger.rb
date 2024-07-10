@@ -9,7 +9,7 @@ module ScoutApm
       end
 
       # The newly created logger which we can configure, and will log to a filepath.
-      class Destination
+      class Logger
         attr_reader :context, :log_instance
 
         # 1 MiB
@@ -25,7 +25,7 @@ module ScoutApm
         def create_logger!
           # Defaults are 7 files with 10 MiB.
           # We create the file in order to prevent a creation header log.
-          File.new(determine_file_path, 'w+')
+          File.new(determine_file_path, 'w+') unless File.exist?(determine_file_path)
           FileLogger.new(determine_file_path, LOG_AGE, LOG_SIZE)
         end
 

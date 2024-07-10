@@ -83,12 +83,18 @@ module ScoutApm
                   - type: json_parser
                     severity:
                       parse_from: attributes.severity
+                    timestamp:
+                      parse_from: attributes.time
+                      layout: "%Y-%m-%dT%H:%M:%S.%LZ"
             processors:
               transform:
                 log_statements:
                   - context: log
                     statements:
+                    # Replace the body with the log message.
                     - 'set(body, attributes["msg"])'
+                    # Move service.name attribute to resource attribute.
+                    - 'set(resource.attributes["service.name"], attributes["service.name"])'
               batch:
             exporters:
               otlp:
