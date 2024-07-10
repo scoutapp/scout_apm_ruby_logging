@@ -46,7 +46,8 @@ describe ScoutApm::Logging::Loggers::Capture do
 
     # Need to wait for the delay first health check, next monitor interval to restart the collector, and then for
     # the collector to restart
-    sleep 60
+    sleep 25
+    wait_for_process_with_timeout!('otelcol-contrib', 20)
 
     expect(`pgrep otelcol-contrib --runstates D,R,S`).not_to be_empty
     new_collector_pid = File.read(collector_pid_location)

@@ -35,8 +35,6 @@ module ScoutApm
         # Load in the dynamic and state based config settings.
         context.config = Config.with_file(context, determine_scout_config_filepath)
 
-        @latest_state_sha = get_state_file_sha
-
         daemonize_process!
       end
 
@@ -51,6 +49,8 @@ module ScoutApm
         end
 
         initiate_collector_setup! unless has_previous_collector_setup?
+
+        @latest_state_sha = get_state_file_sha
 
         run!
       end
@@ -191,6 +191,9 @@ module ScoutApm
 
         remove_collector_process
         initiate_collector_setup!
+
+        # File SHA can change due to port mappings on collector setup.
+        @latest_state_sha = get_state_file_sha
       end
 
       def add_exit_handler!
