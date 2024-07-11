@@ -111,30 +111,27 @@ module ScoutApm
       end
 
       def is_port_available?(port)
-        s = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
-        sa = Socket.sockaddr_in(port, '127.0.0.1')
+        socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
+        remote_address = Socket.sockaddr_in(port, '127.0.0.1')
 
         begin
-          s.connect_nonblock(sa)
+          socket.connect_nonblock(remote_address)
         rescue Errno::EINPROGRESS
-          if IO.select(nil, [s], nil, 1)
-            begin
-              s.connect_nonblock(sa)
-            rescue Errno::EISCONN
-              return false
-            rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-              return true
-            end
-          end
+          IO.select(nil, [socket])
+          retry
+        rescue Errno::EISCONN, Errno::ECONNRESET
+          false
+        rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+          true
+        ensure
+          socket.close if socket && !socket.closed?
         end
-
-        true
       end
 
       def set_health_check_port!
         health_check_port = 13_133
         until is_port_available?(health_check_port)
-          sleep 1
+          sleep 0.1
           health_check_port += 1
         end
 
