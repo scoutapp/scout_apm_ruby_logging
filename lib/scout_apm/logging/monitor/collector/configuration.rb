@@ -91,6 +91,8 @@ module ScoutApm
                 log_statements:
                   - context: log
                     statements:
+                    # Copy original body to raw_bytes attribute.
+                    - 'set(attributes["raw_bytes"], body)'
                     # Replace the body with the log message.
                     - 'set(body, attributes["msg"])'
                     # Move service.name attribute to resource attribute.
