@@ -46,6 +46,8 @@ module ScoutApm
 
           name, action = layer.name.split('/')
 
+          return {} unless name && action
+
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
           derived_value_of_scout_name = "#{name.capitalize}#{layer.type.capitalize}##{action.capitalize}"
 
