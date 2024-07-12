@@ -49,7 +49,7 @@ module ScoutApm
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
           derived_value_of_scout_name = "#{name.capitalize}#{layer.type.capitalize}##{action.capitalize}"
 
-          { dervied_key => dervied_value_of_scout_name }
+          { derived_key => derived_value_of_scout_name }
         end
 
         def scout_context
