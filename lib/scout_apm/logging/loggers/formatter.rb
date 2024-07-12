@@ -21,6 +21,7 @@ module ScoutApm
           attributes_to_log['service.name'] = service_name
 
           attributes_to_log.merge!(scout_layer)
+          attributes_to_log.merge!(scout_context)
           # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
           attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
@@ -49,6 +50,17 @@ module ScoutApm
           dervied_value_of_scout_name = "#{name.capitalize}#{layer.type.capitalize}##{action.capitalize}"
 
           { dervied_key => dervied_value_of_scout_name }
+        end
+
+        def scout_context
+          req = ScoutApm::RequestManager.lookup
+          extra_context = req.context.instance_variable_get('@extra')
+          user_context = req.context.instance_variable_get('@user')
+          # We may want to make this a configuration option in the future, as well as capturing
+          # the URI from the request annotations, but this may include PII.
+          user_context.delete(:ip)
+
+          user_context.transform_keys { |key| "user.#{key}" }.merge(extra_context)
         end
 
         def local_log_location
