@@ -69,7 +69,7 @@ module ScoutApm
         begin
           file = File.open(lock_file, File::RDWR | File::CREAT | File::EXCL)
         rescue Errno::EEXIST
-          context.logger.error('Manager lock file held, continuing.')
+          context.logger.info('Manager lock file held, continuing.')
           return
         end
 
