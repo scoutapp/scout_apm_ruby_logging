@@ -44,7 +44,7 @@ module ScoutApm
         add_exit_handler!
 
         unless has_logs_to_monitor?
-          context.config.logger.warn('No logs are set to be monitored. Please set the `monitored_logs` config setting. Exiting.')
+          context.config.logger.warn('No logs are set to be monitored. Please set the `logs_monitored` config setting. Exiting.')
           return
         end
 
@@ -58,7 +58,7 @@ module ScoutApm
       def run!
         # Prevent the monitor from checking the collector health before it's fully started.
         # Having this be configurable is useful for testing.
-        sleep context.config.value('delay_first_healthcheck')
+        sleep context.config.value('monitor_interval_delay')
 
         loop do
           sleep context.config.value('monitor_interval')
@@ -87,7 +87,7 @@ module ScoutApm
       end
 
       def has_logs_to_monitor?
-        context.config.value('monitored_logs').any?
+        context.config.value('logs_monitored').any?
       end
 
       def has_previous_collector_setup?

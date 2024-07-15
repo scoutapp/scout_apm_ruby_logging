@@ -33,7 +33,7 @@ module ScoutApm
         end
 
         def determine_file_path # rubocop:disable Metrics/AbcSize
-          log_directory = context.config.value('proxy_log_dir')
+          log_directory = context.config.value('logs_proxy_log_dir')
 
           original_basename = File.basename(log_destination) if log_destination.is_a?(String)
 

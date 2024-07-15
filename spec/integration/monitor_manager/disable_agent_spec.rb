@@ -4,8 +4,8 @@ require_relative '../../../lib/scout_apm/logging/monitor/collector/manager'
 
 describe ScoutApm::Logging::Collector::Manager do
   it 'If monitor is false, it should remove the daemon and collector process if they are present' do
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
-    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
+    ENV['SCOUT_LOGS_MONITOR'] = 'true'
+    ENV['SCOUT_LOGS_MONITORED'] = '["/tmp/test.log"]'
 
     expect(`pgrep otelcol-contrib --runstates D,R,S`).to be_empty
 
@@ -13,7 +13,7 @@ describe ScoutApm::Logging::Collector::Manager do
 
     wait_for_process_with_timeout!('otelcol-contrib', 20)
 
-    ENV['SCOUT_MONITOR_LOGS'] = 'false'
+    ENV['SCOUT_LOGS_MONITOR'] = 'false'
 
     ScoutApm::Logging::MonitorManager.new.setup!
 
@@ -23,6 +23,6 @@ describe ScoutApm::Logging::Collector::Manager do
     expect(`pgrep otelcol-contrib --runstates D,R,S`).to be_empty
     expect(`pgrep scout_apm_log_monitor --runstates D,R,S`).to be_empty
 
-    ENV.delete('SCOUT_MONITOR_LOGS')
+    ENV.delete('SCOUT_LOGS_MONITOR')
   end
 end
