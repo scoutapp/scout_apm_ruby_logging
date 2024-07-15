@@ -26,7 +26,10 @@ module ScoutApm
           # Defaults are 7 files with 10 MiB.
           # We create the file in order to prevent a creation header log.
           File.new(determine_file_path, 'w+') unless File.exist?(determine_file_path)
-          FileLogger.new(determine_file_path, LOG_AGE, LOG_SIZE)
+          new_logger = FileLogger.new(determine_file_path, LOG_AGE, LOG_SIZE)
+          # Ruby's Logger handles a lot of the coercion itself.
+          new_logger.level = context.config.value('logs_capture_level')
+          new_logger
         end
 
         def determine_file_path # rubocop:disable Metrics/AbcSize
