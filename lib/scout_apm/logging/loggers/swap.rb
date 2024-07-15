@@ -74,7 +74,7 @@ module ScoutApm
         end
 
         def create_proxy_log_dir!
-          Utils.ensure_directory_exists(context.config.value('proxy_log_dir'))
+          Utils.ensure_directory_exists(context.config.value('logs_proxy_log_dir'))
         end
       end
     end

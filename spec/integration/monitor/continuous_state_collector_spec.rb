@@ -5,9 +5,9 @@ require_relative '../../../lib/scout_apm/logging/monitor/monitor'
 describe ScoutApm::Logging::Monitor do
   it "Should not restart the collector if the state hasn't changed" do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
-    ENV['SCOUT_DELAY_FIRST_HEALTHCHECK'] = '10'
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
-    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
+    ENV['SCOUT_MONITOR_INTERVAL_DELAY'] = '10'
+    ENV['SCOUT_LOGS_MONITOR'] = 'true'
+    ENV['SCOUT_LOGS_MONITORED'] = '["/tmp/test.log"]'
 
     context = ScoutApm::Logging::MonitorManager.instance.context
     collector_pid_location = context.config.value('collector_pid_file')

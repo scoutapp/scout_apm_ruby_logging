@@ -7,10 +7,10 @@ describe ScoutApm::Logging::Config do
     conf = ScoutApm::Logging::Config.with_file(context, conf_file)
 
     expect(conf.value('log_level')).to eq('debug')
-    expect(conf.value('monitor_logs')).to eq(true)
+    expect(conf.value('logs_monitor')).to eq(true)
     expect(conf.value('monitor_pid_file')).to eq('/tmp/scout_apm/scout_apm_log_monitor.pid')
-    expect(conf.value('logging_ingest_key')).to eq('00001000010000abc')
-    expect(conf.value('monitored_logs')).to eq(['/tmp/fake_log_file.log'])
+    expect(conf.value('logs_ingest_key')).to eq('00001000010000abc')
+    expect(conf.value('logs_monitored')).to eq(['/tmp/fake_log_file.log'])
   end
 
   it 'loads the state file into the config' do

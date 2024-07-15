@@ -17,8 +17,8 @@ end
 describe ScoutApm::Logging::Loggers::Capture do
   it 'should swap the STDOUT logger and create a proxy logger' do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
-    ENV['SCOUT_DELAY_FIRST_HEALTHCHECK'] = '10'
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_MONITOR_INTERVAL_DELAY'] = '10'
+    ENV['SCOUT_LOGS_MONITOR'] = 'true'
 
     output_from_log = capture_stdout do
       context = ScoutApm::Logging::Context.new
@@ -33,13 +33,13 @@ describe ScoutApm::Logging::Loggers::Capture do
 
       TestLoggerWrapper.logger.info('TEST')
 
-      log_path = File.join(context.config.value('proxy_log_dir'), 'test.log')
+      log_path = File.join(context.config.value('logs_proxy_log_dir'), 'test.log')
       content = File.read(log_path)
       expect(content).to include('TEST')
 
       state_file = File.read(context.config.value('monitor_state_file'))
       state_data = JSON.parse(state_file)
-      expect(state_data['monitored_logs']).to eq([log_path])
+      expect(state_data['logs_monitored']).to eq([log_path])
     end
 
     expect(output_from_log).to include('TEST')

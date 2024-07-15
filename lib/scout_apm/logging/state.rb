@@ -35,10 +35,10 @@ module ScoutApm
                                  []
                                else
                                  current_data = JSON.parse(contents)
-                                 current_data['monitored_logs']
+                                 current_data['logs_monitored']
                                end
 
-              data['monitored_logs'] = merge_and_dedup_log_locations(updated_log_locations, olds_log_files)
+              data['logs_monitored'] = merge_and_dedup_log_locations(updated_log_locations, olds_log_files)
             end
 
             file.rewind # Move cursor to beginning of the file

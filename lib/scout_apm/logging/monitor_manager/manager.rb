@@ -30,7 +30,7 @@ module ScoutApm
       end
 
       def determine_configuration_state
-        monitoring_enabled = context.config.value('monitor_logs')
+        monitoring_enabled = context.config.value('logs_monitor')
 
         if monitoring_enabled
           context.logger.info('Log monitoring enabled')

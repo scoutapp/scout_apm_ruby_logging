@@ -77,7 +77,7 @@ module ScoutApm
           <<~CONFIG
             receivers:
               filelog:
-                include: [#{context.config.value('monitored_logs').join(',')}]
+                include: [#{context.config.value('logs_monitored').join(',')}]
                 storage: file_storage/filelogreceiver
                 operators:
                   - type: json_parser
@@ -102,7 +102,7 @@ module ScoutApm
               otlp:
                 endpoint: #{context.config.value('logs_reporting_endpoint')}
                 headers:
-                  x-telemetryhub-key: #{context.config.value('logging_ingest_key')}
+                  x-telemetryhub-key: #{context.config.value('logs_ingest_key')}
                 sending_queue:
                   storage: file_storage/otc
             extensions:

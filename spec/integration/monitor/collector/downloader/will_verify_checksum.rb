@@ -4,8 +4,8 @@ require_relative '../../../../../lib/scout_apm/logging/monitor/collector/downloa
 
 describe ScoutApm::Logging::Collector::Downloader do
   it 'should validate checksum, and correct download if neccessary' do
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
-    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
+    ENV['SCOUT_LOGS_MONITOR'] = 'true'
+    ENV['SCOUT_LOGS_MONITORED'] = '["/tmp/test.log"]'
 
     otelcol_contrib_path = '/tmp/scout_apm/otelcol-contrib'
     ScoutApm::Logging::Utils.ensure_directory_exists(otelcol_contrib_path)
@@ -21,7 +21,7 @@ describe ScoutApm::Logging::Collector::Downloader do
 
     expect(`pgrep otelcol-contrib --runstates D,R,S`).not_to be_empty
 
-    ENV['SCOUT_MONITOR_LOGS'] = 'false'
+    ENV['SCOUT_LOGS_MONITOR'] = 'false'
 
     ScoutApm::Logging::MonitorManager.new.setup!
 
@@ -31,7 +31,7 @@ describe ScoutApm::Logging::Collector::Downloader do
     expect(`pgrep otelcol-contrib --runstates D,R,S`).to be_empty
     expect(`pgrep scout_apm_log_monitor --runstates D,R,S`).to be_empty
 
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
+    ENV['SCOUT_LOGS_MONITOR'] = 'true'
 
     ScoutApm::Logging::MonitorManager.new.setup!
 

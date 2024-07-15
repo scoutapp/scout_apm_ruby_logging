@@ -4,8 +4,8 @@ require_relative '../../../lib/scout_apm/logging/monitor/monitor'
 
 describe ScoutApm::Logging::Monitor do
   it 'should use previous collector setup if monitor daemon exits' do
-    ENV['SCOUT_MONITOR_LOGS'] = 'true'
-    ENV['SCOUT_MONITORED_LOGS'] = '["/tmp/test.log"]'
+    ENV['SCOUT_LOGS_MONITOR'] = 'true'
+    ENV['SCOUT_LOGS_MONITORED'] = '["/tmp/test.log"]'
 
     monitor_pid_location = ScoutApm::Logging::MonitorManager.instance.context.config.value('monitor_pid_file')
     collector_pid_location = ScoutApm::Logging::MonitorManager.instance.context.config.value('collector_pid_file')
