@@ -38,7 +38,7 @@ module ScoutApm
           time.utc.strftime(DATETIME_FORMAT)
         end
 
-        def scout_layer
+        def scout_layer # rubocop:disable Metrics/AbcSize
           req = ScoutApm::RequestManager.lookup
           layer = req.instance_variable_get('@layers').find { |lay| lay.type == 'Controller' || lay.type == 'Job' }
 
@@ -48,8 +48,10 @@ module ScoutApm
 
           return {} unless name && action
 
+          updated_name = name.split('_').map(&:capitalize).join
+
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
-          derived_value_of_scout_name = "#{name.capitalize}#{layer.type.capitalize}##{action.capitalize}"
+          derived_value_of_scout_name = "#{updated_name}#{layer.type.capitalize}##{action.capitalize}"
 
           { derived_key => derived_value_of_scout_name }
         end
