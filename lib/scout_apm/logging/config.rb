@@ -13,6 +13,7 @@ module ScoutApm
         log_class
         logging_ingest_key
         monitor_logs
+        logs_capture_level
         monitor_pid_file
         monitor_state_file
         collector_sending_queue_storage_dir
@@ -200,7 +201,8 @@ module ScoutApm
           'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
           'monitor_interval' => 60,
           'delay_first_healthcheck' => 60,
-          'proxy_log_dir' => '/tmp/scout_apm/logs/'
+          'proxy_log_dir' => '/tmp/scout_apm/logs/',
+          'logs_capture_level' => 'debug'
         }.freeze
 
         def value(key)
