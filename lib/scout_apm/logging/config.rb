@@ -24,6 +24,7 @@
 # monitor_state_file - the location of the state file for the monitor
 # monitor_interval   - the interval to check the collector healtcheck and for new state logs
 # monitor_interval_delay - the delay to wait before running the first monitor interval
+# collector_log_level - the log level for the collector
 # collector_sending_queue_storage_dir - the directory to store queue files
 # collector_offset_storage_dir - the directory to store offset files
 # collector_pid_file - the location of the pid file for the collector
@@ -63,6 +64,7 @@ module ScoutApm
         collector_pid_file
         collector_download_dir
         collector_config_file
+        collector_log_level
         collector_version
         health_check_port
       ].freeze
@@ -232,6 +234,7 @@ module ScoutApm
           'monitor_state_file' => '/tmp/scout_apm/scout_apm_log_monitor_state.json',
           'monitor_interval' => 60,
           'monitor_interval_delay' => 60,
+          'collector_log_level' => 'error',
           'collector_offset_storage_dir' => '/tmp/scout_apm/file_storage/receiver/',
           'collector_sending_queue_storage_dir' => '/tmp/scout_apm/file_storage/otc/',
           'collector_pid_file' => '/tmp/scout_apm/scout_apm_otel_collector.pid',
