@@ -1,3 +1,5 @@
+require "bundler/gem_tasks"
+
 $LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'scout_apm/logging/version'
 
