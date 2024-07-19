@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'logger'
-
 module ScoutApm
   module Logging
     module Loggers
@@ -29,6 +27,8 @@ module ScoutApm
           new_logger = FileLogger.new(determine_file_path, LOG_AGE, LOG_SIZE)
           # Ruby's Logger handles a lot of the coercion itself.
           new_logger.level = context.config.value('logs_capture_level')
+          # Add our custom formatter to the logger.
+          new_logger.formatter = Formatter.new
           new_logger
         end
 

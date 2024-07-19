@@ -2,6 +2,8 @@ require 'logger'
 
 require 'spec_helper'
 
+require_relative '../../../lib/scout_apm/logging/loggers/capture'
+
 describe ScoutApm::Logging::Loggers::Capture do
   it 'should find the logger, capture the log destination, and rotate collector configs' do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
@@ -17,6 +19,7 @@ describe ScoutApm::Logging::Loggers::Capture do
     first_logger = ScoutTestLogger.new('/tmp/first_file.log')
     first_logger_basename = File.basename(first_logger.instance_variable_get(:@logdev).filename.to_s)
     first_logger_updated_path = File.join(context.config.value('logs_proxy_log_dir'), first_logger_basename)
+    TestLoggerWrapper.logger = first_logger
 
     # While we only use the ObjectSpace for the test logger, we need to wait for it to be captured.
     wait_for_logger
@@ -36,6 +39,7 @@ describe ScoutApm::Logging::Loggers::Capture do
     second_logger = ScoutTestLogger.new('/tmp/second_file.log')
     second_logger_basename = File.basename(second_logger.instance_variable_get(:@logdev).filename.to_s)
     second_logger_updated_path = File.join(context.config.value('logs_proxy_log_dir'), second_logger_basename)
+    TestLoggerWrapper.logger = second_logger
 
     similuate_railtie
 
@@ -61,7 +65,7 @@ describe ScoutApm::Logging::Loggers::Capture do
   def similuate_railtie
     context = ScoutApm::Logging::MonitorManager.instance.context
 
-    ScoutApm::Logging::Loggers::Capture.new(context).capture_log_locations!
+    ScoutApm::Logging::Loggers::Capture.new(context).capture_and_swap_log_locations!
     ScoutApm::Logging::MonitorManager.new.setup!
   end
 

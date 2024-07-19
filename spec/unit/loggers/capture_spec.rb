@@ -4,7 +4,6 @@ require 'stringio'
 require 'spec_helper'
 
 require_relative '../../../lib/scout_apm/logging/loggers/capture'
-require_relative '../../../lib/scout_apm/logging/loggers/proxy'
 
 def capture_stdout
   old_stdout = $stdout
@@ -33,7 +32,7 @@ describe ScoutApm::Logging::Loggers::Capture do
       wait_for_logger
 
       capture = ScoutApm::Logging::Loggers::Capture.new(context)
-      capture.capture_log_locations!
+      capture.capture_and_swap_log_locations!
 
       expect(TestLoggerWrapper.logger.class).to eq(ScoutApm::Logging::Loggers::Proxy)
 
