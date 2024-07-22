@@ -2,8 +2,12 @@
 
 require 'logger'
 
-require_relative './swap'
+require_relative './formatter'
+require_relative './logger'
 require_relative './proxy'
+require_relative './swaps/rails'
+require_relative './swaps/sidekiq'
+require_relative './swaps/scout'
 
 module ScoutApm
   module Logging
@@ -12,33 +16,32 @@ module ScoutApm
       class Capture
         attr_reader :context
 
+        KNOWN_LOGGERS = [
+          Swaps::Rails,
+          Swaps::Sidekiq,
+          Swaps::Scout
+        ].freeze
+
         def initialize(context)
           @context = context
         end
 
-        def capture_log_locations! # rubocop:disable Metrics/AbcSize
-          logger_instances << Rails.logger if defined?(Rails)
-          logger_instances << Sidekiq.logger if defined?(Sidekiq)
-          logger_instances << ObjectSpace.each_object(::ScoutTestLogger).to_a if defined?(::ScoutTestLogger)
+        def capture_and_swap_log_locations!
+          create_proxy_log_dir!
 
-          # Swap in our logger for each logger instance, in conjunction with the original class.
-          updated_log_locations = logger_instances.compact.flatten.map do |logger|
-            swapped_in_location(logger)
+          # We can move this to filter_map when our lagging version is Ruby 2.7
+          updated_log_locations = KNOWN_LOGGERS.map do |logger|
+            logger.new(context).update_logger! if logger.present?
           end
+          updated_log_locations.compact!
 
           context.config.state.add_log_locations!(updated_log_locations)
         end
 
         private
 
-        def logger_instances
-          @logger_instances ||= []
-        end
-
-        def swapped_in_location(log_instance)
-          swap = Swap.new(context, log_instance)
-          swap.update_logger!
-          swap.log_location
+        def create_proxy_log_dir!
+          Utils.ensure_directory_exists(context.config.value('logs_proxy_log_dir'))
         end
       end
     end
