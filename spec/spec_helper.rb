@@ -22,7 +22,7 @@ end
 
 RSpec.configure do |config|
   ENV["SCOUT_LOG_LEVEL"] = "debug"
-  ENV["SCOUT_COLLECTOR_LOG_LEVEL"] = "debug"
+  ENV["SCOUT_COLLECTOR_LOG_LEVEL"] = "info"
 
   config.after(:each) do
     RSpec::Mocks.space.reset_all

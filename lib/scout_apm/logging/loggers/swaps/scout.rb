@@ -32,23 +32,26 @@ module ScoutApm
             @new_file_logger ||= Loggers::Logger.new(context, log_instance).create_logger!
           end
 
-          def new_log_location
-            new_file_logger.instance_variable_get(:@logdev).filename
-          end
-
-          def swap_in_proxy_logger!
-            proxy_logger = Proxy.new
+          # Eseentially creates the original logger.
+          def original_logger
             # We can use the previous logdev. log_device will continuously call write
             # through the devices until the logdev (@dev) is an IO device other than logdev:
             # https://github.com/ruby/ruby/blob/master/lib/logger/log_device.rb#L42
             # Log device holds the configurations around shifting too.
             original_logdevice = log_instance.instance_variable_get(:@logdev)
-            updated_original_logger = ::Logger.new(original_logdevice)
-            updated_original_logger.formatter = log_instance.formatter
 
+            ::Logger.new(original_logdevice).tap do |logger|
+              logger.formatter = log_instance.formatter
+            end
+          end
+
+          def new_log_location
+            new_file_logger.instance_variable_get(:@logdev).filename
+          end
+
+          def swap_in_proxy_logger!
             # First logger needs to be the original logger for the return value of relayed calls.
-            proxy_logger.add(updated_original_logger)
-            proxy_logger.add(new_file_logger)
+            proxy_logger = Proxy.create_with_loggers(original_logger, new_file_logger)
 
             ::TestLoggerWrapper.logger = proxy_logger
           end
