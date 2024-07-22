@@ -21,9 +21,6 @@ describe ScoutApm::Logging::Loggers::Capture do
     first_logger_updated_path = File.join(context.config.value('logs_proxy_log_dir'), first_logger_basename)
     TestLoggerWrapper.logger = first_logger
 
-    # While we only use the ObjectSpace for the test logger, we need to wait for it to be captured.
-    wait_for_logger
-
     similuate_railtie
 
     # Give the process time to initialize, download the collector, and start it
@@ -67,16 +64,5 @@ describe ScoutApm::Logging::Loggers::Capture do
 
     ScoutApm::Logging::Loggers::Capture.new(context).capture_and_swap_log_locations!
     ScoutApm::Logging::MonitorManager.new.setup!
-  end
-
-  def wait_for_logger
-    start_time = Time.now
-    loop do
-      break if ObjectSpace.each_object(ScoutTestLogger).count.positive?
-
-      raise 'Timed out while waiting for logger in ObjectSpace' if Time.now - start_time > 10
-
-      sleep 0.1
-    end
   end
 end

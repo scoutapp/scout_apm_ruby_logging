@@ -28,9 +28,6 @@ describe ScoutApm::Logging::Loggers::Capture do
 
       TestLoggerWrapper.logger = ScoutTestLogger.new($stdout)
 
-      # While we only use the ObjectSpace for the test logger, we need to wait for it to be captured.
-      wait_for_logger
-
       capture = ScoutApm::Logging::Loggers::Capture.new(context)
       capture.capture_and_swap_log_locations!
 
@@ -48,16 +45,5 @@ describe ScoutApm::Logging::Loggers::Capture do
     end
 
     expect(output_from_log).to include('TEST')
-  end
-
-  def wait_for_logger
-    start_time = Time.now
-    loop do
-      break if ObjectSpace.each_object(::ScoutTestLogger).count.positive?
-
-      raise 'Timed out while waiting for logger in ObjectSpace' if Time.now - start_time > 10
-
-      sleep 0.1
-    end
   end
 end
