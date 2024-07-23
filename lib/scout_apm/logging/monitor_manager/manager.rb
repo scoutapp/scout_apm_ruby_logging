@@ -50,7 +50,10 @@ module ScoutApm
         at_exit do
           # Only remove/restart the monitor and collector if we are exiting from an app_server process.
           # We need to wait on this check, as the process command line changes at some point.
-          remove_processes if Utils.current_process_is_app_server?
+          if Utils.current_process_is_app_server?
+            context.logger.debug('Exiting from app server process. Removing monitor and collector processes.')
+            remove_processes
+          end
         end
       end
 
