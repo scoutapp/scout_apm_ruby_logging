@@ -27,6 +27,8 @@ module ScoutApm
         end
 
         def capture_and_swap_log_locations!
+          return unless context.config.value('logs_monitor')
+
           create_proxy_log_dir!
 
           # We can move this to filter_map when our lagging version is Ruby 2.7
