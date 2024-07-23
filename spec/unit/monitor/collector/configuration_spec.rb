@@ -12,7 +12,7 @@ describe ScoutApm::Logging::Collector::Configuration do
     expect(File.exist?(context.config.value('collector_config_file'))).to be_truthy
     config = YAML.load_file(context.config.value('collector_config_file'))
 
-    expect(config['exporters']['otlp']['endpoint']).to eq('https://otlp.telemetryhub.com:4317')
+    expect(config['exporters']['otlp']['endpoint']).to eq('https://otlp.scoutotel.com:4317')
     expect(config['exporters']['otlp']['headers']['x-telemetryhub-key']).to eq('00001000010000abc')
     expect(config['receivers']['filelog']['include']).to eq(['/tmp/fake_log_file.log'])
   end
@@ -26,7 +26,7 @@ describe ScoutApm::Logging::Collector::Configuration do
     expect(File.exist?(context.config.value('collector_config_file'))).to be_truthy
     config = YAML.load_file(context.config.value('collector_config_file'))
 
-    expect(config['exporters']['otlp']['endpoint']).to eq('https://otlp.telemetryhub.com:4317')
+    expect(config['exporters']['otlp']['endpoint']).to eq('https://otlp.scoutotel.com:4317')
     expect(config['exporters']['otlp']['headers']['x-telemetryhub-key']).to eq('00001000010000abc')
     expect(config['receivers']['filelog']['include']).to eq(['/tmp/fake_log_file.log'])
 
@@ -44,7 +44,7 @@ describe ScoutApm::Logging::Collector::Configuration do
     expect(File.exist?(context.config.value('collector_config_file'))).to be_truthy
     config = YAML.load_file(context.config.value('collector_config_file'))
 
-    expect(config['exporters']['otlp']['endpoint']).to eq('https://otlp.telemetryhub.com:4317')
+    expect(config['exporters']['otlp']['endpoint']).to eq('https://otlp.scoutotel.com:4317')
     expect(config['exporters']['otlp']['headers']['x-telemetryhub-key']).to eq('00001000010000abc')
     expect(config['receivers']['filelog']['include']).to eq(['/tmp/fake_log_file.log'])
   end

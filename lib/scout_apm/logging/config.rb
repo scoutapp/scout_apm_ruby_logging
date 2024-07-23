@@ -227,7 +227,7 @@ module ScoutApm
           'log_level' => 'info',
           'logs_monitored' => [],
           'logs_capture_level' => 'debug',
-          'logs_reporting_endpoint' => 'https://otlp.telemetryhub.com:4317',
+          'logs_reporting_endpoint' => 'https://otlp.scoutotel.com:4317',
           'logs_proxy_log_dir' => '/tmp/scout_apm/logs/',
           'manager_lock_file' => '/tmp/scout_apm/monitor_lock_file.lock',
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
