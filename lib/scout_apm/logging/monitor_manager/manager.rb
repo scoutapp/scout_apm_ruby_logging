@@ -24,9 +24,6 @@ module ScoutApm
         add_exit_handler!
 
         determine_configuration_state
-
-        # Continue to hold the lock until we have written the PID file.
-        ensure_monitor_pid_file_exists
       end
 
       def determine_configuration_state
@@ -35,6 +32,9 @@ module ScoutApm
         if monitoring_enabled
           context.logger.info('Log monitoring enabled')
           create_process
+
+          # Continue to hold the lock until we have written the PID file.
+          ensure_monitor_pid_file_exists
         else
           context.logger.info('Log monitoring disabled')
           remove_processes
@@ -64,12 +64,15 @@ module ScoutApm
         gem_directory = File.expand_path('../../../..', __dir__)
 
         # As we daemonize the process, we will write to the pid file within the process.
-        Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", in: reader)
+        pid = Process.spawn("ruby #{gem_directory}/bin/scout_apm_logging_monitor", in: reader)
 
         reader.close
         # TODO: Add support for Sinatra.
         writer.puts Rails.root if defined?(Rails)
         writer.close
+        # Block until we have spawned the process and forked. This is to ensure
+        # we keep the exclusive lock until the process has written the PID file.
+        Process.wait(pid)
       end
 
       private
