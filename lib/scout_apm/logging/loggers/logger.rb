@@ -10,21 +10,15 @@ module ScoutApm
       class Logger
         attr_reader :context, :log_instance
 
-        # 1 MiB
-        LOG_SIZE = 1024 * 1024
-        # 1 log file
-        LOG_AGE = 1
-
         def initialize(context, log_instance)
           @context = context
           @log_instance = log_instance
         end
 
         def create_logger!
-          # Defaults are 7 files with 10 MiB.
           # We create the file in order to prevent a creation header log.
           File.new(determine_file_path, 'w+') unless File.exist?(determine_file_path)
-          new_logger = FileLogger.new(determine_file_path, LOG_AGE, LOG_SIZE)
+          new_logger = FileLogger.new(determine_file_path)
           # Ruby's Logger handles a lot of the coercion itself.
           new_logger.level = context.config.value('logs_capture_level')
           # Add our custom formatter to the logger.
