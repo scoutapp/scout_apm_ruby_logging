@@ -28,18 +28,16 @@ module ScoutApm
               memo[key] = context.config.value(key)
             end
 
-            unless updated_log_locations.empty?
-              contents = file.read
+            contents = file.read
+            old_log_state_files = if contents.empty?
+                                    []
+                                  else
+                                    current_data = JSON.parse(contents)
+                                    current_data['logs_monitored']
+                                  end
 
-              olds_log_files = if contents.empty?
-                                 []
-                               else
-                                 current_data = JSON.parse(contents)
-                                 current_data['logs_monitored']
-                               end
-
-              data['logs_monitored'] = merge_and_dedup_log_locations(updated_log_locations, olds_log_files)
-            end
+            data['logs_monitored'] =
+              merge_and_dedup_log_locations(updated_log_locations, old_log_state_files, data['logs_monitored'])
 
             file.rewind # Move cursor to beginning of the file
             file.truncate(0) # Truncate existing content
@@ -55,9 +53,10 @@ module ScoutApm
 
         # Should we add better detection for similar basenames but different paths?
         # May be a bit tricky with tools like capistrano and releases paths differentiated by time.
-        def merge_and_dedup_log_locations(new_logs, old_logs)
-          # Take the new logs if duplication, as we could be in a newer release.
-          merged = (new_logs + old_logs).each_with_object({}) do |log_path, hash|
+        def merge_and_dedup_log_locations(*log_locations)
+          # Take the new logs if duplication (those first passed in the args) as we could be in a newer release.
+          logs = log_locations.reduce([], :concat)
+          merged = logs.each_with_object({}) do |log_path, hash|
             base_name = File.basename(log_path)
             hash[base_name] ||= log_path
           end
