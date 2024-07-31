@@ -47,10 +47,13 @@ module ScoutApm
       # treated as the same file as before.
       # If logs get rotated, the fingerprint changes, and the collector automatically detects this.
       def add_exit_handler!
+        # With the use of unicorn and puma worker killer, we want to ensure we only restart (exit and
+        # eventually start) the monitor and collector when the main process exits, and not the workers.
+        initialized_process_id = Process.pid
         at_exit do
           # Only remove/restart the monitor and collector if we are exiting from an app_server process.
           # We need to wait on this check, as the process command line changes at some point.
-          if Utils.current_process_is_app_server?
+          if Utils.current_process_is_app_server? && Process.pid == initialized_process_id
             context.logger.debug('Exiting from app server process. Removing monitor and collector processes.')
             remove_processes
           end
