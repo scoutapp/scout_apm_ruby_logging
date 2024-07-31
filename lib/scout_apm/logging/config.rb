@@ -54,6 +54,7 @@ module ScoutApm
         logs_config
         logs_reporting_endpoint
         logs_proxy_log_dir
+        logs_log_file_size
         manager_lock_file
         monitor_pid_file
         monitor_state_file
@@ -72,6 +73,7 @@ module ScoutApm
       SETTING_COERCIONS = {
         'logs_monitor' => BooleanCoercion.new,
         'logs_monitored' => JsonCoercion.new,
+        'logs_log_file_size' => IntegerCoercion.new,
         'monitor_interval' => IntegerCoercion.new,
         'monitor_interval_delay' => IntegerCoercion.new,
         'health_check_port' => IntegerCoercion.new
@@ -229,6 +231,7 @@ module ScoutApm
           'logs_capture_level' => 'debug',
           'logs_reporting_endpoint' => 'https://otlp.scoutotel.com:4317',
           'logs_proxy_log_dir' => '/tmp/scout_apm/logs/',
+          'logs_log_file_size' => 1024 * 1024 * 10,
           'manager_lock_file' => '/tmp/scout_apm/monitor_lock_file.lock',
           'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
           'monitor_state_file' => '/tmp/scout_apm/scout_apm_log_monitor_state.json',
