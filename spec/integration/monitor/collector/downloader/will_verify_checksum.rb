@@ -12,7 +12,9 @@ describe ScoutApm::Logging::Collector::Downloader do
 
     File.write(otelcol_contrib_path, 'fake content')
 
+    ScoutApm::Logging::MonitorManager.instance.context.logger.info "Time start: #{Time.now}"
     ScoutApm::Logging::MonitorManager.instance.setup!
+    ScoutApm::Logging::MonitorManager.instance.context.logger.info "Time after setup: #{Time.now}"
 
     # Give the process time to initialize, download the collector, and start it
     wait_for_process_with_timeout!('otelcol-contrib', 20)

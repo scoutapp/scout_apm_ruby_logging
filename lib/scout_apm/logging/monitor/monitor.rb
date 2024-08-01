@@ -29,6 +29,7 @@ module ScoutApm
 
       def initialize
         @context = Context.new
+        context.logger.debug('Monitor instance created')
 
         context.application_root = $stdin.gets&.chomp
 
@@ -83,6 +84,7 @@ module ScoutApm
         exit if fork
         $stdin.reopen '/dev/null'
 
+        context.logger.debug("Monitor process daemonized, PID: #{Process.pid}")
         File.write(context.config.value('monitor_pid_file'), Process.pid)
       end
 

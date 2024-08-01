@@ -9,7 +9,9 @@ describe ScoutApm::Logging::Collector::Manager do
 
     expect(`pgrep otelcol-contrib --runstates D,R,S`).to be_empty
 
+    ScoutApm::Logging::MonitorManager.instance.context.logger.info "Time start: #{Time.now}"
     ScoutApm::Logging::MonitorManager.instance.setup!
+    ScoutApm::Logging::MonitorManager.instance.context.logger.info "Time after setup: #{Time.now}"
 
     wait_for_process_with_timeout!('otelcol-contrib', 20)
 

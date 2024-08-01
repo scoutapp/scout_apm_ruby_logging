@@ -90,7 +90,10 @@ module ScoutApm
 
         # Naive benchmarks show this taking ~0.01 seconds.
         loop do
-          break if File.exist?(context.config.value('monitor_pid_file'))
+          if File.exist?(context.config.value('monitor_pid_file'))
+            context.logger.debug('Monitor PID file exists. Releasing lock.')
+            break
+          end
 
           if Time.now - start_time > timeout_seconds
             context.logger.warn('Unable to verify monitor PID file write. Releasing lock.')
