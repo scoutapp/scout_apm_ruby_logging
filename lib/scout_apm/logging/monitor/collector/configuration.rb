@@ -98,6 +98,8 @@ module ScoutApm
                     # Move service.name attribute to resource attribute.
                     - 'set(resource.attributes["service.name"], attributes["service.name"])'
               batch:
+                send_batch_size: #{context.config.value('logs_batch_size')}
+                send_batch_max_size: #{context.config.value('logs_batch_size')}
             exporters:
               otlp:
                 endpoint: #{context.config.value('logs_reporting_endpoint')}
