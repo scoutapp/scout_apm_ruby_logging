@@ -11,7 +11,9 @@ describe ScoutApm::Logging::Monitor do
 
     context = ScoutApm::Logging::MonitorManager.instance.context
     collector_pid_location = context.config.value('collector_pid_file')
+    ScoutApm::Logging::MonitorManager.instance.context.logger.info "Time start: #{Time.now}"
     ScoutApm::Logging::MonitorManager.instance.setup!
+    ScoutApm::Logging::MonitorManager.instance.context.logger.info "Time after setup: #{Time.now}"
     # Give the process time to initialize, download the collector, and start it
     wait_for_process_with_timeout!('otelcol-contrib', 20)
 
