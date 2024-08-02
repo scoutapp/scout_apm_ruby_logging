@@ -8,6 +8,7 @@ require_relative './proxy'
 require_relative './swaps/rails'
 require_relative './swaps/sidekiq'
 require_relative './swaps/scout'
+require_relative './patches/tagged_logging'
 
 module ScoutApm
   module Logging
@@ -26,11 +27,32 @@ module ScoutApm
           @context = context
         end
 
-        def capture_and_swap_log_locations!
+        def setup!
           return unless context.config.value('logs_monitor')
 
           create_proxy_log_dir!
 
+          add_logging_patches!
+          capture_and_swap_log_locations!
+        end
+
+        private
+
+        def create_proxy_log_dir!
+          Utils.ensure_directory_exists(context.config.value('logs_proxy_log_dir'))
+        end
+
+        def add_logging_patches!
+          # We can't swap out the logger similar to that of Rails and Sidekiq, as
+          # the TaggedLogging logger is dynamically generated.
+          if defined?(::ActiveSupport::TaggedLogging)
+            require_relative './patches/rack_logger'
+
+            ::ActiveSupport::TaggedLogging.prepend(Patches::TaggedLogging)
+          end
+        end
+
+        def capture_and_swap_log_locations!
           # We can move this to filter_map when our lagging version is Ruby 2.7
           updated_log_locations = KNOWN_LOGGERS.map do |logger|
             logger.new(context).update_logger! if logger.present?
@@ -38,12 +60,6 @@ module ScoutApm
           updated_log_locations.compact!
 
           context.config.state.add_log_locations!(updated_log_locations)
-        end
-
-        private
-
-        def create_proxy_log_dir!
-          Utils.ensure_directory_exists(context.config.value('logs_proxy_log_dir'))
         end
       end
     end

@@ -21,7 +21,7 @@ module ScoutApm
         initializer 'scout_apm_logging.monitor' do
           context = ScoutApm::Logging::MonitorManager.instance.context
 
-          Loggers::Capture.new(context).capture_and_swap_log_locations!
+          Loggers::Capture.new(context).setup!
 
           unless Utils.skip_setup?
             Utils.attempt_exclusive_lock(context) do

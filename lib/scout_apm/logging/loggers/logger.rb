@@ -22,12 +22,13 @@ module ScoutApm
           # We create the file in order to prevent a creation header log.
           File.new(determine_file_path, 'w+') unless File.exist?(determine_file_path)
           log_size = context.config.value('logs_log_file_size')
-          new_logger = FileLogger.new(determine_file_path, LOG_AGE, log_size)
-          # Ruby's Logger handles a lot of the coercion itself.
-          new_logger.level = context.config.value('logs_capture_level')
-          # Add our custom formatter to the logger.
-          new_logger.formatter = Formatter.new
-          new_logger
+
+          FileLogger.new(determine_file_path, LOG_AGE, log_size).tap do |logger|
+            # Ruby's Logger handles a lot of the coercion itself.
+            logger.level = context.config.value('logs_capture_level')
+            # Add our custom formatter to the logger.
+            logger.formatter = Formatter.new
+          end
         end
 
         def determine_file_path # rubocop:disable Metrics/AbcSize
