@@ -11,8 +11,8 @@ module ScoutApm
         # Patches TaggedLogging to work with our loggers.
         module TaggedLogging
           def tagged(*tags) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-            super(*tags) unless (self == Rails.logger && is_a?(ScoutApm::Logging::Loggers::Proxy)) ||
-                                (Rails.logger.respond_to?(:broadcasts) && Rails.logger.broadcasts.include?(self))
+            super(*tags) unless (self == ::Rails.logger && is_a?(ScoutApm::Logging::Loggers::Proxy)) ||
+                                (::Rails.logger.respond_to?(:broadcasts) && ::Rails.logger.broadcasts.include?(self))
 
             if is_a?(ScoutApm::Logging::Loggers::Proxy)
               if block_given?
@@ -33,7 +33,7 @@ module ScoutApm
                 end
               end
             elsif block_given?
-              loggers = Rails.logger.broadcasts[1..]
+              loggers = ::Rails.logger.broadcasts[1..]
               pushed_counts = extend_and_push_tags(loggers, *tags)
 
               formatter.tagged(*tags) { yield self }.tap do
@@ -41,7 +41,7 @@ module ScoutApm
               end
             # We skip the first logger to prevent double tagging when calling formatter.tagged
             else
-              broadcasts = Rails.logger.broadcasts
+              broadcasts = ::Rails.logger.broadcasts
 
               tagged_loggers = broadcasts.select { |logger| logger.respond_to?(:tagged) }
               file_logger = broadcasts.find { |logger| logger.is_a?(Loggers::FileLogger) }
@@ -64,9 +64,9 @@ module ScoutApm
                                       []
                                     end
 
-              ActiveSupport::TaggedLogging.new(logger).tap do |new_logger|
-                if defined?(ActiveSupport::TaggedLogging::LocalTagStorage)
-                  new_logger.formatter.extend ActiveSupport::TaggedLogging::LocalTagStorage
+              ::ActiveSupport::TaggedLogging.new(logger).tap do |new_logger|
+                if defined?(::ActiveSupport::TaggedLogging::LocalTagStorage)
+                  new_logger.formatter.extend ::ActiveSupport::TaggedLogging::LocalTagStorage
                 end
                 new_logger.push_tags(*logger_current_tags, *tags)
               end
