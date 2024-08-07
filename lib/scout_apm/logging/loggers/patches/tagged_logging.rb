@@ -10,78 +10,80 @@ module ScoutApm
       module Patches
         # Patches TaggedLogging to work with our loggers.
         module TaggedLogging
-          def tagged(*tags) # rubocop
-            if self == Rails.logger
-              if is_a?(ScoutApm::Logging::Loggers::Proxy)
-                if block_given?
-                  @loggers.each do |logger|
-                    logger.formatter.extend ::ActiveSupport::TaggedLogging::Formatter unless logger.formatter.respond_to?(:tagged)
-                    logger.formatter.tagged(*tags) { yield self }
-                  end
-                else
-                  new_loggers = instance_variable_get(:@loggers).map do |logger|
-                    current_tags = if logger.formatter.respond_to?(:current_tags)
-                                     logger.formatter.current_tags
-                                   else
-                                     []
-                                   end
+          def tagged(*tags) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+            super(*tags) unless (self == Rails.logger && is_a?(ScoutApm::Logging::Loggers::Proxy)) ||
+                                (Rails.logger.respond_to?(:broadcasts) && Rails.logger.broadcasts.include?(self))
 
-                    ActiveSupport::TaggedLogging.new(logger).tap do |new_logger|
-                      if defined?(ActiveSupport::TaggedLogging::LocalTagStorage)
-                        new_logger.formatter.extend ActiveSupport::TaggedLogging::LocalTagStorage
-                      end
-                      new_logger.push_tags(*current_tags, *tags)
-                    end
-                  end
-
-                  cloned_proxy = clone.tap do |cp|
-                    cp.instance_variable_set(:@loggers, new_loggers)
-                  end
-                end
-              else
-                super(*tags)
-              end
-            elsif Rails.logger.respond_to?(:broadcasts) && Rails.logger.broadcasts.include?(self)
+            if is_a?(ScoutApm::Logging::Loggers::Proxy)
               if block_given?
-                pushed_counts = Rails.logger.broadcasts.map do |logger|
-                  logger.formatter.extend ::ActiveSupport::TaggedLogging::Formatter unless logger.formatter.respond_to?(:tagged)
-                  logger.formatter.push_tags(tags).size
-                end
+                # We skip the first logger to prevent double tagging when calling formatter.tagged
+                loggers = @loggers[1..]
+                pushed_counts = extend_and_push_tags(loggers, *tags)
 
-                formatter.tagged(*tags) { yield self }.tap do |_result|
-                  Rails.logger.broadcasts.map.with_index do |logger, index|
-                    logger.formatter.pop_tags(pushed_counts[index])
-                  end
+                formatter.tagged(*tags) { yield self }.tap do
+                  logger_pop_tags(loggers, pushed_counts)
                 end
               else
-                broadcasts = Rails.logger.broadcasts
+                loggers = instance_variable_get(:@loggers)
 
-                tagged_loggers = broadcasts.select { |logger| logger.respond_to?(:tagged) }
-                current_tags = tagged_loggers.first.formatter.current_tags
+                new_loggers = create_cloned_extended_loggers(loggers, nil, *tags)
 
-                updated_tagged_logger = tagged_loggers.map do |logger|
-                  ActiveSupport::TaggedLogging.new(logger).tap do |new_logger|
-                    if defined?(ActiveSupport::TaggedLogging::LocalTagStorage)
-                      new_logger.formatter.extend ActiveSupport::TaggedLogging::LocalTagStorage
-                    end
-                    new_logger.push_tags(*current_tags, *tags)
-                  end
+                self.clone.tap do |cp| # rubocop:disable Style/RedundantSelf
+                  cp.instance_variable_set(:@loggers, new_loggers)
                 end
-
-                file_logger = broadcasts.find { |logger| logger.is_a?(Loggers::FileLogger) }
-                updated_file_logger = ActiveSupport::TaggedLogging.new(file_logger).tap do |new_logger|
-                  if defined?(ActiveSupport::TaggedLogging::LocalTagStorage)
-                    new_logger.formatter.extend ActiveSupport::TaggedLogging::LocalTagStorage
-                  end
-                  new_logger.push_tags(*current_tags, *tags)
-                end
-
-                loggers = updated_tagged_logger << updated_file_logger
-
-                Proxy.create_with_loggers(*loggers)
               end
+            elsif block_given?
+              loggers = Rails.logger.broadcasts[1..]
+              pushed_counts = extend_and_push_tags(loggers, *tags)
+
+              formatter.tagged(*tags) { yield self }.tap do
+                logger_pop_tags(loggers, pushed_counts)
+              end
+            # We skip the first logger to prevent double tagging when calling formatter.tagged
             else
-              super(*tags)
+              broadcasts = Rails.logger.broadcasts
+
+              tagged_loggers = broadcasts.select { |logger| logger.respond_to?(:tagged) }
+              file_logger = broadcasts.find { |logger| logger.is_a?(Loggers::FileLogger) }
+              loggers = tagged_loggers << file_logger
+
+              current_tags = tagged_loggers.first.formatter.current_tags
+
+              new_loggers = create_cloned_extended_loggers(loggers, current_tags, *tags)
+              Proxy.create_with_loggers(*new_loggers)
+            end
+          end
+
+          def create_cloned_extended_loggers(loggers, current_tags = nil, *tags)
+            loggers.map do |logger|
+              logger_current_tags = if current_tags
+                                      current_tags
+                                    elsif logger.formatter.respond_to?(:current_tags)
+                                      logger.formatter.current_tags
+                                    else
+                                      []
+                                    end
+
+              ActiveSupport::TaggedLogging.new(logger).tap do |new_logger|
+                if defined?(ActiveSupport::TaggedLogging::LocalTagStorage)
+                  new_logger.formatter.extend ActiveSupport::TaggedLogging::LocalTagStorage
+                end
+                new_logger.push_tags(*logger_current_tags, *tags)
+              end
+            end
+          end
+
+          def extend_and_push_tags(loggers, *tags)
+            loggers.map do |logger|
+              logger.formatter.extend ::ActiveSupport::TaggedLogging::Formatter unless logger.formatter.respond_to?(:tagged)
+
+              logger.formatter.push_tags(tags).size
+            end
+          end
+
+          def logger_pop_tags(loggers, pushed_counts)
+            loggers.map.with_index do |logger, index|
+              logger.formatter.pop_tags(pushed_counts[index])
             end
           end
         end

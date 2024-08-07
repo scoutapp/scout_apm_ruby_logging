@@ -47,8 +47,6 @@ module ScoutApm
           # the TaggedLogging logger is dynamically generated.
           return unless defined?(::ActiveSupport::TaggedLogging)
 
-          require_relative './patches/rack_logger'
-
           ::ActiveSupport::TaggedLogging.prepend(Patches::TaggedLogging)
         end
 
