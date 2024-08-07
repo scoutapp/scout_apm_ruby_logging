@@ -62,7 +62,7 @@ describe ScoutApm::Logging::Loggers::Capture do
   def similuate_railtie
     context = ScoutApm::Logging::MonitorManager.instance.context
 
-    ScoutApm::Logging::Loggers::Capture.new(context).capture_and_swap_log_locations!
+    ScoutApm::Logging::Loggers::Capture.new(context).setup!
     ScoutApm::Logging::MonitorManager.new.setup!
   end
 end

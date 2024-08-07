@@ -45,11 +45,11 @@ module ScoutApm
         def add_logging_patches!
           # We can't swap out the logger similar to that of Rails and Sidekiq, as
           # the TaggedLogging logger is dynamically generated.
-          if defined?(::ActiveSupport::TaggedLogging)
-            require_relative './patches/rack_logger'
+          return unless defined?(::ActiveSupport::TaggedLogging)
 
-            ::ActiveSupport::TaggedLogging.prepend(Patches::TaggedLogging)
-          end
+          require_relative './patches/rack_logger'
+
+          ::ActiveSupport::TaggedLogging.prepend(Patches::TaggedLogging)
         end
 
         def capture_and_swap_log_locations!
