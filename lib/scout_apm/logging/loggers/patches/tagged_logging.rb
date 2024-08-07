@@ -13,8 +13,10 @@ module ScoutApm
             if self == Rails.logger
               if self.is_a?(ScoutApm::Logging::Loggers::Proxy)
                 if block_given?
-                  # TODO: Add suport for block notation
-                  self.formatter.tagged(*tags) { yield self }
+                  @loggers.each do |logger|
+                    logger.formatter.extend ::ActiveSupport::TaggedLogging::Formatter unless logger.formatter.respond_to?(:tagged)
+                    logger.formatter.tagged(*tags) { yield self }
+                  end
                 else
                   new_loggers = self.instance_variable_get(:@loggers).map do |logger|
                     current_tags = if logger.formatter.respond_to?(:current_tags)
@@ -36,12 +38,20 @@ module ScoutApm
               else
                 super(*tags)
               end
-            elsif Rails.logger.is_a?(::ActiveSupport::BroadcastLogger) && Rails.logger.broadcasts.include?(self)
+            elsif Rails.logger.respond_to?(:broadcasts) && Rails.logger.broadcasts.include?(self)
               if block_given?
-                # TODO: Add suport for block notation
-                super(*tags)
+                pushed_counts = Rails.logger.broadcasts.map do |logger|
+                  logger.formatter.extend ::ActiveSupport::TaggedLogging::Formatter unless logger.formatter.respond_to?(:tagged)
+                  logger.formatter.push_tags(tags).size
+                end
+                
+                formatter.tagged(*tags) { yield self }.tap do |_result|
+                  Rails.logger.broadcasts.map.with_index do |logger, index|
+                    logger.formatter.pop_tags(pushed_counts[index])
+                  end
+                end
               else
-                broadcasts = Rails.logger.instance_variable_get(:@broadcasts)
+                broadcasts = Rails.logger.broadcasts
 
                 tagged_loggers = broadcasts.select {|logger| logger.respond_to?(:tagged)}
                 current_tags = tagged_loggers.first.formatter.current_tags

@@ -64,6 +64,11 @@ module ScoutApm
             proxy_logger.extend ::ActiveSupport::TaggedLogging if log_instance.respond_to?(:tagged)
 
             ::Rails.logger = proxy_logger
+
+            # We also need to swap some of the Rails railtie loggers that get initialized and cached.
+            ActiveRecord::Base.logger = proxy_logger
+            ActionController::Base.logger = proxy_logger
+            ActiveJob::Base.logger = proxy_logger
           end
         end
       end
