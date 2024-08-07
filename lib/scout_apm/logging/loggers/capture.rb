@@ -45,9 +45,19 @@ module ScoutApm
         def add_logging_patches!
           # We can't swap out the logger similar to that of Rails and Sidekiq, as
           # the TaggedLogging logger is dynamically generated.
-          return unless defined?(::ActiveSupport::TaggedLogging)
+          return unless Rails.logger.respond_to?(:tagged)
 
           ::ActiveSupport::TaggedLogging.prepend(Patches::TaggedLogging)
+
+          # Re-extend TaggedLogging to verify the patch is be applied.
+          # This appears to be an issue in Ruby 2.7 with the broadcast logger.
+          ruby_version = Gem::Version.new(RUBY_VERSION)
+          isruby27 = (ruby_version >= Gem::Version.new('2.7') && ruby_version < Gem::Version.new('3.0'))
+          return unless isruby27 && Rails.logger.respond_to?(:broadcasts)
+
+          Rails.logger.broadcasts.each do |logger|
+            logger.extend ::ActiveSupport::TaggedLogging
+          end
         end
 
         def capture_and_swap_log_locations!

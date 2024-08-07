@@ -33,13 +33,13 @@ module ScoutApm
                 end
               end
             elsif block_given?
+              # We skip the first logger to prevent double tagging when calling formatter.tagged
               loggers = ::Rails.logger.broadcasts[1..]
               pushed_counts = extend_and_push_tags(loggers, *tags)
 
               formatter.tagged(*tags) { yield self }.tap do
                 logger_pop_tags(loggers, pushed_counts)
               end
-            # We skip the first logger to prevent double tagging when calling formatter.tagged
             else
               broadcasts = ::Rails.logger.broadcasts
 

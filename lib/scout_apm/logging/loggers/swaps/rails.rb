@@ -65,7 +65,7 @@ module ScoutApm
 
             ::Rails.logger = proxy_logger
 
-            # We also need to swap some of the Rails railtie loggers that get initialized and cached.
+            # We also need to swap some of the Rails railtie loggers.
             ::ActiveRecord::Base.logger = proxy_logger if defined?(::ActiveRecord::Base)
             ::ActionController::Base.logger = proxy_logger if defined?(::ActionController::Base)
             ::ActiveJob::Base.logger = proxy_logger if defined?(::ActiveJob::Base)
