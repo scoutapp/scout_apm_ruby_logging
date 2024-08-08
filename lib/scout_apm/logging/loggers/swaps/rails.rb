@@ -61,8 +61,14 @@ module ScoutApm
           def swap_in_proxy_logger!
             # First logger needs to be the original logger for the return value of relayed calls.
             proxy_logger = Proxy.create_with_loggers(original_logger, new_file_logger)
+            proxy_logger.extend ::ActiveSupport::TaggedLogging if log_instance.respond_to?(:tagged)
 
             ::Rails.logger = proxy_logger
+
+            # We also need to swap some of the Rails railtie loggers.
+            ::ActiveRecord::Base.logger = proxy_logger if defined?(::ActiveRecord::Base)
+            ::ActionController::Base.logger = proxy_logger if defined?(::ActionController::Base)
+            ::ActiveJob::Base.logger = proxy_logger if defined?(::ActiveJob::Base)
           end
         end
       end

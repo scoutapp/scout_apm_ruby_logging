@@ -29,7 +29,7 @@ describe ScoutApm::Logging::Loggers::Capture do
       TestLoggerWrapper.logger = ScoutTestLogger.new($stdout)
 
       capture = ScoutApm::Logging::Loggers::Capture.new(context)
-      capture.capture_and_swap_log_locations!
+      capture.setup!
 
       expect(TestLoggerWrapper.logger.class).to eq(ScoutApm::Logging::Loggers::Proxy)
 
