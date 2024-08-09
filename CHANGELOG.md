@@ -1,3 +1,6 @@
+## 0.0.4
+* Fix memoizing of log attributes, which could lead to persistent attributes.
+
 ## 0.0.3
 * **Feature**: Add support for TaggedLogging.
 * Add ability to customize file logger size. Increase default size to 10MiB.
