@@ -48,6 +48,11 @@ describe ScoutApm::Logging do
     expect(messages.count('[YIELD] Yield Test')).to eq(1)
     expect(messages.count('Another Log')).to eq(1)
 
+    log_locations = lines.map { |item| item['log_location'] }.compact
+
+    # Verify that log attributes aren't persisted
+    expect(log_locations.size).to eq(1)
+
     # Kill the rails process. We use kill as using any other signal throws a long log line.
     Process.kill('KILL', rails_pid)
     # Kill the process and ensure PID file clean up

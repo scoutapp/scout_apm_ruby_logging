@@ -20,6 +20,7 @@ end
 
 class RootController < ActionController::Base
   def index
+    Rails.logger.warn('Add location log attributes')
     Rails.logger.tagged('TEST').info('Some log')
     Rails.logger.tagged('YIELD') { logger.info('Yield Test') }
     Rails.logger.info('Another Log')
