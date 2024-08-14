@@ -95,6 +95,8 @@ module ScoutApm
                     - 'set(attributes["raw_bytes"], body)'
                     # Replace the body with the log message.
                     - 'set(body, attributes["msg"])'
+                    # Remove the msg attribute.
+                    - 'delete_key(attributes, "msg")'
                     # Move service.name attribute to resource attribute.
                     - 'set(resource.attributes["service.name"], attributes["service.name"])'
               batch:
