@@ -1,3 +1,6 @@
+## 0.0.5
+* Remove `msg` attribute after it has been moved to the log body to prevent duplication.
+
 ## 0.0.4
 * Fix memoizing of log attributes, which could lead to persistent attributes.
 
