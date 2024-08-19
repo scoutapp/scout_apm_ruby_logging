@@ -12,6 +12,7 @@ Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new($stdout))
 
 class App < ::Rails::Application
   config.eager_load = false
+  config.log_level = :info
 
   routes.append do
     root to: 'root#index'
@@ -24,6 +25,8 @@ class RootController < ActionController::Base
     Rails.logger.tagged('TEST').info('Some log')
     Rails.logger.tagged('YIELD') { logger.info('Yield Test') }
     Rails.logger.info('Another Log')
+    Rails.logger.debug('Should not be captured')
+
     render plain: Rails.version
   end
 end

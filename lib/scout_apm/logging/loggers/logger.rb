@@ -25,7 +25,7 @@ module ScoutApm
 
           FileLogger.new(determine_file_path, LOG_AGE, log_size).tap do |logger|
             # Ruby's Logger handles a lot of the coercion itself.
-            logger.level = context.config.value('logs_capture_level')
+            logger.level = determined_log_level
             # Add our custom formatter to the logger.
             logger.formatter = Formatter.new
           end
@@ -54,6 +54,16 @@ module ScoutApm
         end
 
         private
+
+        # This makes the assumption that the logs we capture should be
+        # at least that of the original logger level, and not lower, but can be
+        # configured to be a higher cutoff.
+        def determined_log_level
+          capture_level = context.config.value('logs_capture_level')
+          capture_value = ::Logger::Severity.const_get(capture_level.upcase)
+
+          [capture_value, log_instance.level].max
+        end
 
         def find_log_destination(logdev)
           dev = try(logdev, :filename) || try(logdev, :dev)

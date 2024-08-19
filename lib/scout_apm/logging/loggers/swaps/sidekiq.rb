@@ -41,6 +41,7 @@ module ScoutApm
             original_logdevice = log_instance.instance_variable_get(:@logdev)
 
             ::Logger.new(original_logdevice).tap do |logger|
+              logger.level = log_instance.level
               logger.formatter = log_instance.formatter
             end
           end
