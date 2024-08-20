@@ -11,3 +11,5 @@ log/*.log
 tooling/*
 !tooling/*.md
 !tooling/*.rb
+# Ignore created test task files
+lib/tasks/*
