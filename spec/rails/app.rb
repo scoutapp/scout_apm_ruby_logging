@@ -27,6 +27,8 @@ class RootController < ActionController::Base
     Rails.logger.info('Another Log')
     Rails.logger.debug('Should not be captured')
 
+    puts 'A puts log'
+
     render plain: Rails.version
   end
 end

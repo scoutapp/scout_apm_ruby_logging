@@ -9,6 +9,7 @@ require_relative './swaps/rails'
 require_relative './swaps/sidekiq'
 require_relative './swaps/scout'
 require_relative './patches/tagged_logging'
+require_relative './patches/puts'
 
 module ScoutApm
   module Logging
@@ -42,7 +43,11 @@ module ScoutApm
           Utils.ensure_directory_exists(context.config.value('logs_proxy_log_dir'))
         end
 
-        def add_logging_patches!
+        def add_logging_patches! # rubocop:disable Metrics/AbcSize
+          # Update puts to write to our known log file as well.
+          $stdout.singleton_class.prepend(Patches::Puts)
+          context.config.state.add_log_locations!([determine_puts_file_path.to_s])
+
           # We can't swap out the logger similar to that of Rails and Sidekiq, as
           # the TaggedLogging logger is dynamically generated.
           return unless Rails.logger.respond_to?(:tagged)
@@ -68,6 +73,12 @@ module ScoutApm
           updated_log_locations.compact!
 
           context.config.state.add_log_locations!(updated_log_locations)
+        end
+
+        def determine_puts_file_path
+          context = ScoutApm::Logging::MonitorManager.instance.context
+          log_directory = context.config.value('logs_proxy_log_dir')
+          File.join(log_directory, 'puts.log')
         end
       end
     end

@@ -29,8 +29,37 @@ describe ScoutApm::Logging do
 
     proxy_dir = context.config.value('logs_proxy_log_dir')
     files = Dir.entries(proxy_dir) - ['.', '..']
-    log_file = File.join(proxy_dir, files[0])
+    base_log_file = files.find { |file| !file.include?('puts') }
+    log_file = File.join(proxy_dir, base_log_file)
+    messages = get_log_messages(log_file)
 
+    # Verify we have all the logs
+    expect(messages.count('[TEST] Some log')).to eq(1)
+    expect(messages.count('[YIELD] Yield Test')).to eq(1)
+    expect(messages.count('Another Log')).to eq(1)
+    expect(messages.count('Should not be captured')).to eq(0)
+
+    log_locations = get_lines(log_file).map { |item| item['log_location'] }.compact
+    # Verify that log attributes aren't persisted
+    expect(log_locations.size).to eq(1)
+
+    base_puts_log_file = files.find { |file| file.include?('puts') }
+    puts_log_file = File.join(proxy_dir, base_puts_log_file)
+    puts_messages = get_log_messages(puts_log_file)
+
+    expect(puts_messages.count('A puts log')).to eq(1)
+
+    # Kill the rails process. We use kill as using any other signal throws a long log line.
+    Process.kill('KILL', rails_pid)
+    # Kill the process and ensure PID file clean up
+    Process.kill('TERM', pid)
+    sleep 1 # Give the process time to exit
+    expect(File.exist?(pid_file)).to be_falsey
+  end
+
+  private
+
+  def get_lines(log_file)
     lines = []
     File.open(log_file, 'r') do |file|
       file.each_line do |line|
@@ -40,25 +69,11 @@ describe ScoutApm::Logging do
         puts e
       end
     end
+    lines
+  end
 
-    messages = lines.map { |item| item['msg'] }
-
-    # Verify we have all the logs
-    expect(messages.count('[TEST] Some log')).to eq(1)
-    expect(messages.count('[YIELD] Yield Test')).to eq(1)
-    expect(messages.count('Another Log')).to eq(1)
-    expect(messages.count('Should not be captured')).to eq(0)
-
-    log_locations = lines.map { |item| item['log_location'] }.compact
-
-    # Verify that log attributes aren't persisted
-    expect(log_locations.size).to eq(1)
-
-    # Kill the rails process. We use kill as using any other signal throws a long log line.
-    Process.kill('KILL', rails_pid)
-    # Kill the process and ensure PID file clean up
-    Process.kill('TERM', pid)
-    sleep 1 # Give the process time to exit
-    expect(File.exist?(pid_file)).to be_falsey
+  def get_log_messages(log_file)
+    lines = get_lines(log_file)
+    lines.map { |item| item['msg'] }
   end
 end
