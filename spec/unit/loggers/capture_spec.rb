@@ -19,6 +19,7 @@ describe ScoutApm::Logging::Loggers::Capture do
     ENV['SCOUT_MONITOR_INTERVAL'] = '10'
     ENV['SCOUT_MONITOR_INTERVAL_DELAY'] = '10'
     ENV['SCOUT_LOGS_MONITOR'] = 'true'
+    ENV['SCOUT_LOGS_CAPTURE_LEVEL'] = 'debug'
 
     output_from_log = capture_stdout do
       context = ScoutApm::Logging::Context.new
@@ -26,7 +27,10 @@ describe ScoutApm::Logging::Loggers::Capture do
       conf = ScoutApm::Logging::Config.with_file(context, conf_file)
       context.config = conf
 
-      TestLoggerWrapper.logger = ScoutTestLogger.new($stdout)
+      test_logger = ScoutTestLogger.new($stdout)
+      test_logger.level = 'INFO'
+
+      TestLoggerWrapper.logger = test_logger
 
       capture = ScoutApm::Logging::Loggers::Capture.new(context)
       capture.setup!
@@ -34,10 +38,15 @@ describe ScoutApm::Logging::Loggers::Capture do
       expect(TestLoggerWrapper.logger.class).to eq(ScoutApm::Logging::Loggers::Proxy)
 
       TestLoggerWrapper.logger.info('TEST')
+      TestLoggerWrapper.logger.debug('SHOULD NOT CAPTURE')
 
       log_path = File.join(context.config.value('logs_proxy_log_dir'), 'test.log')
       content = File.read(log_path)
       expect(content).to include('TEST')
+
+      # Shouldn't capture. While the log_capture_level was set to debug,
+      # the original logger instance had a higher log level of info.
+      expect(content).not_to include('SHOULD NOT CAPTURE')
 
       state_file = File.read(context.config.value('monitor_state_file'))
       state_data = JSON.parse(state_file)
@@ -45,5 +54,6 @@ describe ScoutApm::Logging::Loggers::Capture do
     end
 
     expect(output_from_log).to include('TEST')
+    expect(output_from_log).not_to include('SHOULD NOT CAPTURE')
   end
 end

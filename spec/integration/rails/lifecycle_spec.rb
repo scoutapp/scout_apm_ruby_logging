@@ -47,6 +47,7 @@ describe ScoutApm::Logging do
     expect(messages.count('[TEST] Some log')).to eq(1)
     expect(messages.count('[YIELD] Yield Test')).to eq(1)
     expect(messages.count('Another Log')).to eq(1)
+    expect(messages.count('Should not be captured')).to eq(0)
 
     log_locations = lines.map { |item| item['log_location'] }.compact
 
