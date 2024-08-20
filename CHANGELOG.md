@@ -1,3 +1,6 @@
+## 0.0.7
+* Fix determined logger level comparison
+
 ## 0.0.6
 * Ensure logger level is set back to the original.
 
