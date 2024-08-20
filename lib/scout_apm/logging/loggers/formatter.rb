@@ -12,14 +12,14 @@ module ScoutApm
       class Formatter < ::Logger::Formatter
         DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%LZ'
 
-        def call(severity, time, progname, msg)
+        def call(severity, time, progname, msg) # rubocop:disable Metrics/AbcSize
           attributes_to_log = {
-            severity: severity,
             time: format_datetime(time),
             pid: Process.pid.to_s,
             msg: msg2str(msg)
           }
 
+          attributes_to_log[:severity] = determine_severity(severity)
           attributes_to_log[:progname] = progname if progname
           attributes_to_log['service.name'] = service_name
 
@@ -35,6 +35,12 @@ module ScoutApm
 
         def format_datetime(time)
           time.utc.strftime(DATETIME_FORMAT)
+        end
+
+        # We want to be able to override this method, and have the ability
+        # to change the severity of the log.
+        def determine_severity(severity)
+          severity
         end
 
         def scout_layer # rubocop:disable Metrics/AbcSize

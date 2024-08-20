@@ -21,6 +21,8 @@ describe ScoutApm::Logging::Loggers::Capture do
     first_logger_updated_path = File.join(context.config.value('logs_proxy_log_dir'), first_logger_basename)
     TestLoggerWrapper.logger = first_logger
 
+    puts_logger_path = File.join(context.config.value('logs_proxy_log_dir'), 'puts.log')
+
     similuate_railtie
 
     # Give the process time to initialize, download the collector, and start it
@@ -31,7 +33,7 @@ describe ScoutApm::Logging::Loggers::Capture do
 
     content = File.read(state_file_location)
     data = JSON.parse(content)
-    expect(data['logs_monitored']).to eq([first_logger_updated_path])
+    expect(data['logs_monitored']).to eq([first_logger_updated_path, puts_logger_path])
 
     second_logger = ScoutTestLogger.new('/tmp/second_file.log')
     second_logger_basename = File.basename(second_logger.instance_variable_get(:@logdev).filename.to_s)
@@ -43,7 +45,7 @@ describe ScoutApm::Logging::Loggers::Capture do
     content = File.read(state_file_location)
     data = JSON.parse(content)
 
-    expect(data['logs_monitored'].sort).to eq([first_logger_updated_path, second_logger_updated_path])
+    expect(data['logs_monitored'].sort).to eq([first_logger_updated_path, puts_logger_path, second_logger_updated_path])
 
     # Need to wait for the delay first health check, next monitor interval to restart the collector, and then for
     # the collector to restart
