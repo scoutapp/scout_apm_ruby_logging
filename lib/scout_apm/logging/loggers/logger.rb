@@ -62,7 +62,13 @@ module ScoutApm
           capture_level = context.config.value('logs_capture_level')
           capture_value = ::Logger::Severity.const_get(capture_level.upcase)
 
-          [capture_value, log_instance.level].max
+          log_instance_value = if log_instance.level.is_a?(Integer)
+                                 log_instance.level
+                               else
+                                 ::Logger::Severity.const_get(log_instance.level.to_s.upcase)
+                               end
+
+          [capture_value, log_instance_value].max
         end
 
         def find_log_destination(logdev)
