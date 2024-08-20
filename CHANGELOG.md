@@ -1,3 +1,6 @@
+## 0.0.6
+* Ensure logger level is set back to the original.
+
 ## 0.0.5
 * Remove `msg` attribute after it has been moved to the log body to prevent duplication.
 
