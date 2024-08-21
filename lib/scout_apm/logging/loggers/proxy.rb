@@ -7,7 +7,7 @@ module ScoutApm
       class Proxy
         def self.create_with_loggers(*loggers)
           new.tap do |proxy_logger|
-            loggers.each { |logger| proxy_logger.add(logger) }
+            loggers.each { |logger| proxy_logger.add_scout_loggers(logger) }
           end
         end
 
@@ -15,11 +15,11 @@ module ScoutApm
           @loggers = []
         end
 
-        def add(logger)
+        def add_scout_loggers(logger)
           @loggers << logger
         end
 
-        def remove(logger)
+        def remove_scout_loggers(logger)
           @loggers.reject! { |inst_log| inst_log == logger }
 
           @loggers
