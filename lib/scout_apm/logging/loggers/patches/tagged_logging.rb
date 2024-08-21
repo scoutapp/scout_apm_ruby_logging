@@ -11,8 +11,8 @@ module ScoutApm
         # Patches TaggedLogging to work with our loggers.
         module TaggedLogging
           def tagged(*tags) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-            super(*tags) unless (self == ::Rails.logger && is_a?(ScoutApm::Logging::Loggers::Proxy)) ||
-                                (::Rails.logger.respond_to?(:broadcasts) && ::Rails.logger.broadcasts.include?(self))
+            return super(*tags) unless (self == ::Rails.logger && is_a?(ScoutApm::Logging::Loggers::Proxy)) ||
+                                       (::Rails.logger.respond_to?(:broadcasts) && ::Rails.logger.broadcasts.include?(self))
 
             if is_a?(ScoutApm::Logging::Loggers::Proxy)
               if block_given?
@@ -20,8 +20,13 @@ module ScoutApm
                 loggers = @loggers[1..]
                 pushed_counts = extend_and_push_tags(loggers, *tags)
 
-                formatter.tagged(*tags) { yield self }.tap do
+                begin
+                  formatter.tagged(*tags) { yield self }.tap do
+                    logger_pop_tags(loggers, pushed_counts)
+                  end
+                rescue StandardError => e
                   logger_pop_tags(loggers, pushed_counts)
+                  raise e
                 end
               else
                 loggers = instance_variable_get(:@loggers)
@@ -36,9 +41,13 @@ module ScoutApm
               # We skip the first logger to prevent double tagging when calling formatter.tagged
               loggers = ::Rails.logger.broadcasts[1..]
               pushed_counts = extend_and_push_tags(loggers, *tags)
-
-              formatter.tagged(*tags) { yield self }.tap do
+              begin
+                formatter.tagged(*tags) { yield self }.tap do
+                  logger_pop_tags(loggers, pushed_counts)
+                end
+              rescue StandardError => e
                 logger_pop_tags(loggers, pushed_counts)
+                raise e
               end
             else
               broadcasts = ::Rails.logger.broadcasts
