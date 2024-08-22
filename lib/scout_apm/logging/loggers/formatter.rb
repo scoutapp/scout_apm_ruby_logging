@@ -68,7 +68,7 @@ module ScoutApm
         end
 
         def scout_transaction_id
-          { "scout-transaction-id": ScoutApm::RequestManager.lookup.transaction_id }
+          { "scout_transaction_id": ScoutApm::RequestManager.lookup.transaction_id }
         end
 
         def local_log_location
