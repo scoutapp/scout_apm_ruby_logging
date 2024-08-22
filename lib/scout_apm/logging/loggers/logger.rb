@@ -3,7 +3,9 @@
 module ScoutApm
   module Logging
     module Loggers
+      # The actual instance of the logger.
       class FileLogger < ::Logger
+        include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
       end
 
       # The newly created logger which we can configure, and will log to a filepath.
