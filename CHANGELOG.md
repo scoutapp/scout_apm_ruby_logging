@@ -1,3 +1,9 @@
+## 0.0.8
+* Fix internal method names for proxy logger to prevent accidental overriding.
+* Re-broadcast to console in development for the proxy logger.
+* Fix tags not being removed when yielded contents throw an exception.
+* Fix missing return statement, where tagged logging patches were being added to unintended loggers.
+
 ## 0.0.7
 * Fix determined logger level comparison
 
