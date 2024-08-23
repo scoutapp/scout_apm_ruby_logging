@@ -46,12 +46,18 @@ module ScoutApm
 
           name, action = layer.name.split('/')
 
-          return {} unless name && action
+          return {} unless name
 
           updated_name = name.split('_').map(&:capitalize).join
 
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
-          derived_value_of_scout_name = "#{updated_name}#{layer.type.capitalize}##{action}"
+
+          # For background jobs, we won't have an action.
+          derived_value_of_scout_name = if action
+                                          "#{updated_name}#{layer.type.capitalize}##{action}"
+                                        else
+                                          name
+                                        end
 
           { derived_key => derived_value_of_scout_name }
         end
