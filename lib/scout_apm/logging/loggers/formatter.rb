@@ -12,7 +12,7 @@ module ScoutApm
       class Formatter < ::Logger::Formatter
         DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%LZ'
 
-        def call(severity, time, progname, msg)
+        def call(severity, time, progname, msg) # rubocop:disable Metrics/AbcSize
           attributes_to_log = {
             severity: severity,
             time: format_datetime(time),
@@ -23,6 +23,7 @@ module ScoutApm
           attributes_to_log[:progname] = progname if progname
           attributes_to_log['service.name'] = service_name
 
+          attributes_to_log.merge!(scout_transaction_id)
           attributes_to_log.merge!(scout_layer)
           attributes_to_log.merge!(scout_context)
           # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
@@ -64,6 +65,10 @@ module ScoutApm
           user_context.delete(:ip)
 
           user_context.transform_keys { |key| "user.#{key}" }.merge(extra_context)
+        end
+
+        def scout_transaction_id
+          { "scout_transaction_id": ScoutApm::RequestManager.lookup.transaction_id }
         end
 
         def local_log_location
