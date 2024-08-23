@@ -1,3 +1,6 @@
+## 0.0.9
+* Add Scout Transaction ID to log attributes.
+
 ## 0.0.8
 * Fix internal method names for proxy logger to prevent accidental overriding.
 * Re-broadcast to console in development for the proxy logger.
