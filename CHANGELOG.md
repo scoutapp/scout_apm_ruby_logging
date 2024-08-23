@@ -1,3 +1,6 @@
+## 0.0.11
+* Fix Scout layer capturing in log attributes for background jobs.
+
 ## 0.0.10
 * Remove capitalization from action name in the formatter, to match that of the standard format.
 
