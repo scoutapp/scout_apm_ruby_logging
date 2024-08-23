@@ -1,3 +1,6 @@
+## 0.0.10
+* Remove capitalization from action name in the formatter, to match that of the standard format.
+
 ## 0.0.9
 * Add Scout Transaction ID to log attributes.
 
