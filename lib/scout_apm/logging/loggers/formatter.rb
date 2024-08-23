@@ -51,7 +51,7 @@ module ScoutApm
           updated_name = name.split('_').map(&:capitalize).join
 
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
-          derived_value_of_scout_name = "#{updated_name}#{layer.type.capitalize}##{action.capitalize}"
+          derived_value_of_scout_name = "#{updated_name}#{layer.type.capitalize}##{action}"
 
           { derived_key => derived_value_of_scout_name }
         end
