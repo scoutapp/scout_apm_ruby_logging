@@ -35,7 +35,7 @@ describe ScoutApm::Logging::Loggers::Capture do
       capture = ScoutApm::Logging::Loggers::Capture.new(context)
       capture.setup!
 
-      expect(TestLoggerWrapper.logger.class).to eq(ScoutApm::Logging::Loggers::Proxy)
+      expect(TestLoggerWrapper.logger.respond_to?(:is_scout_proxy_logger?)).to eq(true)
 
       TestLoggerWrapper.logger.info('TEST')
       TestLoggerWrapper.logger.debug('SHOULD NOT CAPTURE')

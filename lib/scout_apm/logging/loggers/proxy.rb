@@ -25,6 +25,26 @@ module ScoutApm
           @loggers
         end
 
+        def is_a?(klass)
+          @loggers.first.is_a?(klass)
+        end
+
+        def instance_of?(klass)
+          @loggers.first.instance_of?(klass)
+        end
+
+        def kind_of?(klass)
+          @loggers.first.is_a?(klass)
+        end
+
+        def class
+          @loggers.first.class
+        end
+
+        def is_scout_proxy_logger?
+          true
+        end
+
         def method_missing(name, *args, &block)
           # Some libraries will do stuff like Library.logger.formatter = Rails.logger.formatter
           # As such, we should return the first logger's (the original logger) return value.
