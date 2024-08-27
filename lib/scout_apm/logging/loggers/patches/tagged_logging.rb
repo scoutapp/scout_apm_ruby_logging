@@ -11,10 +11,10 @@ module ScoutApm
         # Patches TaggedLogging to work with our loggers.
         module TaggedLogging
           def tagged(*tags) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-            return super(*tags) unless (self == ::Rails.logger && is_a?(ScoutApm::Logging::Loggers::Proxy)) ||
+            return super(*tags) unless (self == ::Rails.logger && respond_to?(:is_scout_proxy_logger?)) ||
                                        (::Rails.logger.respond_to?(:broadcasts) && ::Rails.logger.broadcasts.include?(self))
 
-            if is_a?(ScoutApm::Logging::Loggers::Proxy)
+            if respond_to?(:is_scout_proxy_logger?)
               if block_given?
                 # We skip the first logger to prevent double tagging when calling formatter.tagged
                 loggers = @loggers[1..]
