@@ -1,3 +1,9 @@
+## 0.0.12
+* Prevent certain attributes from being changed on created FileLogger.
+* Update proxy class to inherit from BasicObject to relay class comparison methods
+to held loggers.
+* Fix ERB evaluation in scout_apm.yml config file to allow for usage of Rails.env.
+
 ## 0.0.11
 * Fix Scout layer capturing in log attributes for background jobs.
 
