@@ -27,6 +27,17 @@ module ScoutApm
           @loggers
         end
 
+        # We don't want other libraries to change the formatter of the logger we create.
+        def formatter=(formatter)
+          @loggers.first.formatter = formatter
+        end
+
+        # We don't want other libraries to change the level of the logger we create, as this
+        # is dictated by the logs_capture_level configuration.
+        def level=(level)
+          @loggers.first.level = level
+        end
+
         def class
           ::Logger
         end
