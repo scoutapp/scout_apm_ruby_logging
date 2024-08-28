@@ -6,6 +6,21 @@ module ScoutApm
       # The actual instance of the logger.
       class FileLogger < ::Logger
         include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
+
+        # Other loggers may be extended with additional methods that have not been applied to this file logger.
+        # Most likely, these methods will still utilize the exiting logging methods to write to the IO device,
+        # however, if this is not the case we may miss logs. With that being said, we shouldn't impact the original
+        # applications intended behavior and let the user know we don't support it and no-op.
+        def method_missing(name, *_args)
+          return unless defined?(::Rails)
+
+          ::Rails.logger.warn("Method #{name} called on ScoutApm::Logging::Loggers::FileLogger, but it is not defined.")
+        end
+
+        # More impactful for the broadcast logger.
+        def respond_to_missing?(name, *_args)
+          super
+        end
       end
 
       # The newly created logger which we can configure, and will log to a filepath.
