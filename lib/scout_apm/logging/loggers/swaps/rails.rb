@@ -50,11 +50,11 @@ module ScoutApm
               logger.formatter = log_instance.formatter
 
               if ::Rails.env.development? && $stdout.tty? && $stderr.tty?
-                next if ActiveSupport::Logger.respond_to?(:logger_outputs_to?) && ActiveSupport::Logger.logger_outputs_to?(
+                next if ::ActiveSupport::Logger.respond_to?(:logger_outputs_to?) && ::ActiveSupport::Logger.logger_outputs_to?(
                   logger, $stdout, $stderr
                 )
 
-                logger.extend(ActiveSupport::Logger.broadcast(ActiveSupport::Logger.new($stdout)))
+                logger.extend(ActiveSupport::Logger.broadcast(::ActiveSupport::Logger.new($stdout)))
               end
             end
           end
