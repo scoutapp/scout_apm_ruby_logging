@@ -4,9 +4,7 @@ module ScoutApm
   module Logging
     module Loggers
       # Holds both the original application logger and the new one. Relays commands to both.
-      class Proxy < BasicObject
-        include ::Kernel
-
+      class Proxy
         def self.create_with_loggers(*loggers)
           new.tap do |proxy_logger|
             loggers.each { |logger| proxy_logger.add_scout_loggers(logger) }
@@ -38,8 +36,20 @@ module ScoutApm
           @loggers.first.level = level
         end
 
+        def is_a?(klass)
+          @loggers.first.is_a?(klass)
+        end
+
+        def kind_of?(klass)
+          @loggers.first.is_a?(klass)
+        end
+
+        def instance_of?(klass)
+          @loggers.first.instance_of?(klass)
+        end
+
         def class
-          ::Logger
+          @loggers.first.class
         end
 
         def is_scout_proxy_logger?
