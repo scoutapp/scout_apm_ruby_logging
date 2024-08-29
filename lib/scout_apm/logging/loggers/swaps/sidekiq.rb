@@ -17,6 +17,7 @@ module ScoutApm
           end
 
           def update_logger!
+            context.logger.debug('Swapping in Proxy for Sidekiq.')
             swap_in_proxy_logger!
 
             new_log_location

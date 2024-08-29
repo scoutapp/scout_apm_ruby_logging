@@ -19,8 +19,10 @@ module ScoutApm
           def update_logger!
             # In Rails 7.1, broadcast logger was added which allows sinking to multiple IO devices.
             if defined?(::ActiveSupport::BroadcastLogger) && log_instance.is_a?(::ActiveSupport::BroadcastLogger)
+              context.logger.debug('Rails Broadcast logger detected. Adding new logger to broadcast.')
               add_logger_to_broadcast!
             else
+              context.logger.debug('Swapping in Proxy for Rails.')
               swap_in_proxy_logger!
             end
 
