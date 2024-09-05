@@ -38,12 +38,7 @@ module ScoutApm
             # through the devices until the logdev (@dev) is an IO device other than logdev:
             # https://github.com/ruby/ruby/blob/master/lib/logger/log_device.rb#L42
             # Log device holds the configurations around shifting too.
-            original_logdevice = log_instance.instance_variable_get(:@logdev)
-
-            ::Logger.new(original_logdevice).tap do |logger|
-              logger.level = log_instance.level
-              logger.formatter = log_instance.formatter
-            end
+            @original_logger = log_instance.clone
           end
 
           def new_log_location
