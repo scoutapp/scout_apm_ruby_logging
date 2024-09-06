@@ -19,10 +19,17 @@ module ScoutApm
           @loggers << logger
         end
 
-        def remove_scout_loggers(logger)
+        def remove_scout_loggers!(logger)
           @loggers.reject! { |inst_log| inst_log == logger }
 
           @loggers
+        end
+
+        def swap_scout_loggers!(old_logger, new_logger)
+          logger_index = @loggers.index(old_logger)
+          return unless logger_index
+
+          @loggers[logger_index] = new_logger
         end
 
         # We don't want other libraries to change the formatter of the logger we create.

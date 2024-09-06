@@ -42,10 +42,11 @@ module ScoutApm
           Utils.ensure_directory_exists(context.config.value('logs_proxy_log_dir'))
         end
 
-        def add_logging_patches!
+        def add_logging_patches! # rubocop:disable Metrics/AbcSize
+          require_relative './patches/rails_logger' unless ::Rails.logger.respond_to?(:broadcasts)
           # We can't swap out the logger similar to that of Rails and Sidekiq, as
           # the TaggedLogging logger is dynamically generated.
-          return unless Rails.logger.respond_to?(:tagged)
+          return unless ::Rails.logger.respond_to?(:tagged)
 
           ::ActiveSupport::TaggedLogging.prepend(Patches::TaggedLogging)
 
@@ -53,9 +54,9 @@ module ScoutApm
           # This appears to be an issue in Ruby 2.7 with the broadcast logger.
           ruby_version = Gem::Version.new(RUBY_VERSION)
           isruby27 = (ruby_version >= Gem::Version.new('2.7') && ruby_version < Gem::Version.new('3.0'))
-          return unless isruby27 && Rails.logger.respond_to?(:broadcasts)
+          return unless isruby27 && ::Rails.logger.respond_to?(:broadcasts)
 
-          Rails.logger.broadcasts.each do |logger|
+          ::Rails.logger.broadcasts.each do |logger|
             logger.extend ::ActiveSupport::TaggedLogging
           end
         end
