@@ -1,3 +1,8 @@
+## 0.0.13
+* Add ability to handle other libraries setting the Rails logger.
+* Overwrite comparability methods on the proxy class. Have proxy class inherit from Object again.
+* Clone original log instances.
+
 ## 0.0.12
 * Prevent certain attributes from being changed on created FileLogger.
 * Update proxy class to inherit from BasicObject to relay class comparison methods
