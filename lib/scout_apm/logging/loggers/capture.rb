@@ -2,6 +2,7 @@
 
 require 'logger'
 
+require_relative './opentelemetry/opentelemetry'
 require_relative './formatter'
 require_relative './logger'
 require_relative './proxy'
@@ -29,6 +30,8 @@ module ScoutApm
 
         def setup!
           return unless context.config.value('logs_monitor')
+
+          OpenTelemetry.setup(context)
 
           create_proxy_log_dir!
 
@@ -67,8 +70,6 @@ module ScoutApm
             logger.new(context).update_logger! if logger.present?
           end
           updated_log_locations.compact!
-
-          context.config.state.add_log_locations!(updated_log_locations)
         end
       end
     end

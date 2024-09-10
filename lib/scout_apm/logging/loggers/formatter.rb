@@ -16,7 +16,6 @@ module ScoutApm
           attributes_to_log = {
             severity: severity,
             time: format_datetime(time),
-            pid: Process.pid.to_s,
             msg: msg2str(msg)
           }
 
@@ -29,7 +28,21 @@ module ScoutApm
           # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
           attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
-          "#{attributes_to_log.to_json}\n"
+          message = "#{attributes_to_log.to_json}\n"
+          attributes_to_log['raw_bytes'] = message
+
+          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
+            name: 'scout_apm',
+            version: '0.1.0',
+          ).on_emit(
+            severity_text: severity,
+            severity_number: ::Logger::Severity.const_get(severity),
+            attributes: attributes_to_log,
+            timestamp: format_datetime(time),
+            body: msg, # New Relic uses formatted_message here. This also helps us with not recording progname, because it is included in the formatted message by default. Which seems more appropriate?
+            context: ::OpenTelemetry::Context.current
+          )
+          message
         end
 
         private
@@ -84,6 +97,12 @@ module ScoutApm
           return {} unless last_local_location
 
           { 'log_location' => last_local_location }
+        end
+
+        def context
+          ScoutApm::Logging::Context.new.tap do |context|
+            context.config = ScoutApm::Logging::Config.with_file(context, context.config.value('config_file'))
+          end
         end
 
         # We may need to clean this up a bit.

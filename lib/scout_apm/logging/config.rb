@@ -95,16 +95,10 @@ module ScoutApm
         overlays = [
           ConfigEnvironment.new,
           ConfigFile.new(context, file_path, config),
-          ConfigDynamic.new,
-          ConfigState.new(context),
           ConfigDefaults.new,
           ConfigNull.new
         ]
         new(context, overlays)
-      end
-
-      def state
-        @overlays.find { |overlay| overlay.is_a? ConfigState }
       end
 
       def value(key)
@@ -131,98 +125,6 @@ module ScoutApm
         end
       end
 
-      # Dynamically set state based on the application.
-      class ConfigDynamic
-        @values_to_set = {
-          'health_check_port': nil
-        }
-
-        class << self
-          attr_reader :values_to_set
-
-          def set_value(key, value)
-            @values_to_set[key] = value
-          end
-        end
-
-        def value(key)
-          self.class.values_to_set[key]
-        end
-
-        def has_key?(key)
-          self.class.values_to_set.key?(key)
-        end
-
-        def name
-          'dynamic'
-        end
-      end
-
-      # State that is persisted and communicated upon by multiple processes.
-      class ConfigState
-        @values_to_set = {
-          'logs_monitored': [],
-          'health_check_port': nil
-        }
-
-        class << self
-          attr_reader :values_to_set
-
-          def set_value(key, value)
-            @values_to_set[key] = value
-          end
-
-          def get_values_to_set
-            @values_to_set.keys.map(&:to_s)
-          end
-        end
-
-        attr_reader :context, :state
-
-        def initialize(context)
-          @context = context
-
-          # Note, the config on the context we are passing in here comes from the Config.without_file. We
-          # won't be aware of a state file that was defined in a config file, but this would be a very
-          # rare thing to have happen as this is more of an internal config value.
-          @state = State.new(context)
-
-          set_values_from_state
-        end
-
-        def value(key)
-          self.class.values_to_set[key]
-        end
-
-        def has_key?(key)
-          self.class.values_to_set.key?(key)
-        end
-
-        def name
-          'state'
-        end
-
-        def flush_state!
-          state.flush_to_file!
-        end
-
-        def add_log_locations!(updated_log_locations)
-          state.flush_to_file!(updated_log_locations)
-        end
-
-        private
-
-        def set_values_from_state
-          data = state.load_state_from_file
-
-          return unless data
-
-          data.each do |key, value|
-            self.class.set_value(key, value)
-          end
-        end
-      end
-
       # Defaults in case no config file has been found.
       class ConfigDefaults
         DEFAULTS = {
@@ -230,6 +132,7 @@ module ScoutApm
           'logs_monitored' => [],
           'logs_capture_level' => 'debug',
           'logs_reporting_endpoint' => 'https://otlp.scoutotel.com:4317',
+          'logs_reporting_endpoint_http' => 'https://otlp.scoutotel.com:4318/v1/logs',
           'logs_proxy_log_dir' => '/tmp/scout_apm/logs/',
           'logs_log_file_size' => 1024 * 1024 * 10,
           'manager_lock_file' => '/tmp/scout_apm/monitor_lock_file.lock',
