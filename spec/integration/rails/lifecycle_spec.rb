@@ -5,24 +5,15 @@ describe ScoutApm::Logging do
   it 'checks the Rails lifecycle for creating the daemon and collector processes' do
     ENV['SCOUT_LOGS_MONITOR'] = 'true'
 
-    context = ScoutApm::Logging::MonitorManager.instance.context
-    pid_file = context.config.value('monitor_pid_file')
-    expect(File.exist?(pid_file)).to be_falsey
+    context = ScoutApm::Logging::Context.new
+    context.config = ScoutApm::Logging::Config.with_file(context, context.config.value('config_file'))
 
     rails_pid = fork do
       initialize_app
     end
 
-    wait_for_process_with_timeout!('otelcol-contrib', 20)
-
-    # Check if the monitor PID file exists
-    expect(File.exist?(pid_file)).to be_truthy
-
-    # Read the PID from the PID file
-    pid = File.read(pid_file).to_i
-
-    # Check if the process with the stored PID is running
-    expect(ScoutApm::Logging::Utils.check_process_liveliness(pid, 'scout_apm_logging_monitor')).to be_truthy
+    # TODO: Improve check to wait for Rails initialization.
+    sleep 5
 
     # Call the app to generate the logs
     `curl localhost:8080`
@@ -56,9 +47,5 @@ describe ScoutApm::Logging do
 
     # Kill the rails process. We use kill as using any other signal throws a long log line.
     Process.kill('KILL', rails_pid)
-    # Kill the process and ensure PID file clean up
-    Process.kill('TERM', pid)
-    sleep 1 # Give the process time to exit
-    expect(File.exist?(pid_file)).to be_falsey
   end
 end

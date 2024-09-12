@@ -33,13 +33,13 @@ module ScoutApm
 
           ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
             name: 'scout_apm',
-            version: '0.1.0',
+            version: '0.1.0'
           ).on_emit(
             severity_text: severity,
             severity_number: ::Logger::Severity.const_get(severity),
             attributes: attributes_to_log,
             timestamp: format_datetime(time),
-            body: msg, # New Relic uses formatted_message here. This also helps us with not recording progname, because it is included in the formatted message by default. Which seems more appropriate?
+            body: msg,
             context: ::OpenTelemetry::Context.current
           )
           message

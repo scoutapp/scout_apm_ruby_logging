@@ -44,12 +44,14 @@ module ScoutApm
         def self.setup(context)
           exporter = OpenTelemetry::Exporter::OTLP::LogsExporter.new(endpoint: context.config.value('logs_reporting_endpoint_http'))
           processor = OpenTelemetry::SDK::Logs::Export::BatchLogRecordProcessor.new(exporter)
+          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider = OpenTelemetry::SDK::Logs::LoggerProvider.new(resource: scout_resource(context))
+          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.add_log_record_processor(processor)
+        end
 
+        def self.scout_resource(context)
           our_resources = ::OpenTelemetry::SDK::Resources::Resource.create({'telemetryhub.key' => context.config.value('logs_ingest_key')})
           default_resources = ::OpenTelemetry::SDK::Resources::Resource.default
-          resource = default_resources.merge(our_resources)
-          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider = OpenTelemetry::SDK::Logs::LoggerProvider.new(resource: resource)
-          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.add_log_record_processor(processor)
+          default_resources.merge(our_resources)
         end
       end
     end

@@ -3,6 +3,7 @@ AllCops:
     - "bin/*"
     - "tmp/**/*"
     - "vendor/**/*"
+    - lib/scout_apm/logging/loggers/opentelemetry/**/*
     - "spec/spec_helper.rb"
     - "gems/*"
     - "Rakefile"

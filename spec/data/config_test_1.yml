@@ -9,7 +9,6 @@ common: &defaults
   ###
   logs_monitor: true
   logs_ingest_key: "00001000010000abc"
-  logs_monitored: ["/tmp/fake_log_file.log"]
 
 production:
   <<: *defaults

@@ -16,8 +16,6 @@ end
 
 describe ScoutApm::Logging::Loggers::Capture do
   it 'should swap the STDOUT logger and create a proxy logger' do
-    ENV['SCOUT_MONITOR_INTERVAL'] = '10'
-    ENV['SCOUT_MONITOR_INTERVAL_DELAY'] = '10'
     ENV['SCOUT_LOGS_MONITOR'] = 'true'
     ENV['SCOUT_LOGS_CAPTURE_LEVEL'] = 'debug'
 
@@ -47,10 +45,6 @@ describe ScoutApm::Logging::Loggers::Capture do
       # Shouldn't capture. While the log_capture_level was set to debug,
       # the original logger instance had a higher log level of info.
       expect(content).not_to include('SHOULD NOT CAPTURE')
-
-      state_file = File.read(context.config.value('monitor_state_file'))
-      state_data = JSON.parse(state_file)
-      expect(state_data['logs_monitored']).to eq([log_path])
     end
 
     expect(output_from_log).to include('TEST')
