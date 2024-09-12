@@ -4,13 +4,9 @@ require 'spec_helper'
 require 'zlib'
 require 'stringio'
 require_relative '../../rails/app'
-require_relative '../../../lib/scout_apm/logging/loggers/opentelemetry/exporter/proto/collector/logs/v1/logs_service_pb'
 
 describe ScoutApm::Logging do
   before do
-    # Allow real HTTP requests to go through
-    WebMock.allow_net_connect!
-
     @file_path = '/app/response_body.txt'
     # Capture the outgoing HTTP request to inspect its values
     stub_request(:post, 'https://otlp-devel.scoutotel.com:4318/v1/logs')

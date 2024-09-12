@@ -295,7 +295,7 @@ module ScoutApm
 
               def as_otlp_log_record(log_record_data)
                 Opentelemetry::Proto::Logs::V1::LogRecord.new(
-                  time_unix_nano: log_record_data.observed_timestamp, # TODO: FIX THIS.
+                  time_unix_nano: log_record_data.timestamp,
                   observed_time_unix_nano: log_record_data.observed_timestamp,
                   severity_number: as_otlp_severity_number(log_record_data.severity_number),
                   severity_text: log_record_data.severity_text,

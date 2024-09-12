@@ -7,10 +7,14 @@ require 'google/protobuf'
 
 require_relative '../../common/v1/common_pb'
 
-descriptor_data = "\n.opentelemetry/proto/resource/v1/resource.proto\x12\x1fopentelemetry.proto.resource.v1\x1a*opentelemetry/proto/common/v1/common.proto\"i\n\x08Resource\x12;\n\nattributes\x18\x01 \x03(\x0b\x32\'.opentelemetry.proto.common.v1.KeyValue\x12 \n\x18\x64ropped_attributes_count\x18\x02 \x01(\rB\x83\x01\n\"io.opentelemetry.proto.resource.v1B\rResourceProtoP\x01Z*go.opentelemetry.io/proto/otlp/resource/v1\xaa\x02\x1fOpenTelemetry.Proto.Resource.V1b\x06proto3"
-
-pool = Google::Protobuf::DescriptorPool.generated_pool
-pool.add_serialized_file(descriptor_data)
+Google::Protobuf::DescriptorPool.generated_pool.build do
+  add_file("scout/opentelemetry/proto/resource/v1/resource.proto", :syntax => :proto3) do
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.resource.v1.Resource" do
+      repeated :attributes, :message, 1, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValue"
+      optional :dropped_attributes_count, :uint32, 2
+    end
+  end
+end
 
 module ScoutApm
   module Logging
@@ -19,7 +23,7 @@ module ScoutApm
         module Proto
           module Resource
             module V1
-              Resource = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.resource.v1.Resource').msgclass
+              Resource = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.resource.v1.Resource").msgclass
             end
           end
         end

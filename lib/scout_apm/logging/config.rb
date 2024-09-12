@@ -52,6 +52,7 @@ module ScoutApm
         logs_capture_level
         logs_config
         logs_reporting_endpoint
+        logs_reporting_endpoint_http
         logs_proxy_log_dir
         logs_log_file_size
       ].freeze

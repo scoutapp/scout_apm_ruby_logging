@@ -7,10 +7,20 @@ require 'google/protobuf'
 
 require_relative '../../../logs/v1/logs_pb'
 
-descriptor_data = "\n8opentelemetry/proto/collector/logs/v1/logs_service.proto\x12%opentelemetry.proto.collector.logs.v1\x1a&opentelemetry/proto/logs/v1/logs.proto\"\\\n\x18\x45xportLogsServiceRequest\x12@\n\rresource_logs\x18\x01 \x03(\x0b\x32).opentelemetry.proto.logs.v1.ResourceLogs\"u\n\x19\x45xportLogsServiceResponse\x12X\n\x0fpartial_success\x18\x01 \x01(\x0b\x32?.opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess\"O\n\x18\x45xportLogsPartialSuccess\x12\x1c\n\x14rejected_log_records\x18\x01 \x01(\x03\x12\x15\n\rerror_message\x18\x02 \x01(\t2\x9d\x01\n\x0bLogsService\x12\x8d\x01\n\x06\x45xport\x12?.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest\x1a@.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse\"\x00\x42\x98\x01\n(io.opentelemetry.proto.collector.logs.v1B\x10LogsServiceProtoP\x01Z0go.opentelemetry.io/proto/otlp/collector/logs/v1\xaa\x02%OpenTelemetry.Proto.Collector.Logs.V1b\x06proto3"
-
-pool = Google::Protobuf::DescriptorPool.generated_pool
-pool.add_serialized_file(descriptor_data)
+Google::Protobuf::DescriptorPool.generated_pool.build do
+  add_file("scout/opentelemetry/proto/collector/logs/v1/logs_service.proto", :syntax => :proto3) do
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest" do
+      repeated :resource_logs, :message, 1, "scout_apm.logging.loggers.opentelemetry.proto.logs.v1.ResourceLogs"
+    end
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse" do
+      optional :partial_success, :message, 1, "scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess"
+    end
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess" do
+      optional :rejected_log_records, :int64, 1
+      optional :error_message, :string, 2
+    end
+  end
+end
 
 module ScoutApm
   module Logging
@@ -20,9 +30,9 @@ module ScoutApm
           module Collector
             module Logs
               module V1
-                ExportLogsServiceRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest').msgclass
-                ExportLogsServiceResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse').msgclass
-                ExportLogsPartialSuccess = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess').msgclass
+                ExportLogsServiceRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest").msgclass
+                ExportLogsServiceResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse").msgclass
+                ExportLogsPartialSuccess = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess").msgclass
               end
             end
           end

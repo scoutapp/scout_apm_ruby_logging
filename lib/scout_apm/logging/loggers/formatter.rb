@@ -38,7 +38,7 @@ module ScoutApm
             severity_text: severity,
             severity_number: ::Logger::Severity.const_get(severity),
             attributes: attributes_to_log,
-            timestamp: format_datetime(time),
+            timestamp: time,
             body: msg,
             context: ::OpenTelemetry::Context.current
           )

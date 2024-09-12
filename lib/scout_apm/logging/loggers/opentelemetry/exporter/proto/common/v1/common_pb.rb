@@ -5,10 +5,37 @@
 
 require 'google/protobuf'
 
-descriptor_data = "\n*opentelemetry/proto/common/v1/common.proto\x12\x1dopentelemetry.proto.common.v1\"\x8c\x02\n\x08\x41nyValue\x12\x16\n\x0cstring_value\x18\x01 \x01(\tH\x00\x12\x14\n\nbool_value\x18\x02 \x01(\x08H\x00\x12\x13\n\tint_value\x18\x03 \x01(\x03H\x00\x12\x16\n\x0c\x64ouble_value\x18\x04 \x01(\x01H\x00\x12@\n\x0b\x61rray_value\x18\x05 \x01(\x0b\x32).opentelemetry.proto.common.v1.ArrayValueH\x00\x12\x43\n\x0ckvlist_value\x18\x06 \x01(\x0b\x32+.opentelemetry.proto.common.v1.KeyValueListH\x00\x12\x15\n\x0b\x62ytes_value\x18\x07 \x01(\x0cH\x00\x42\x07\n\x05value\"E\n\nArrayValue\x12\x37\n\x06values\x18\x01 \x03(\x0b\x32\'.opentelemetry.proto.common.v1.AnyValue\"G\n\x0cKeyValueList\x12\x37\n\x06values\x18\x01 \x03(\x0b\x32\'.opentelemetry.proto.common.v1.KeyValue\"O\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.opentelemetry.proto.common.v1.AnyValue\"\x94\x01\n\x14InstrumentationScope\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12;\n\nattributes\x18\x03 \x03(\x0b\x32\'.opentelemetry.proto.common.v1.KeyValue\x12 \n\x18\x64ropped_attributes_count\x18\x04 \x01(\rB{\n io.opentelemetry.proto.common.v1B\x0b\x43ommonProtoP\x01Z(go.opentelemetry.io/proto/otlp/common/v1\xaa\x02\x1dOpenTelemetry.Proto.Common.V1b\x06proto3"
-
-pool = Google::Protobuf::DescriptorPool.generated_pool
-pool.add_serialized_file(descriptor_data)
+Google::Protobuf::DescriptorPool.generated_pool.build do
+  add_file("scout/opentelemetry/proto/common/v1/common.proto", :syntax => :proto3) do
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.common.v1.AnyValue" do
+      oneof :value do
+        optional :string_value, :string, 1
+        optional :bool_value, :bool, 2
+        optional :int_value, :int64, 3
+        optional :double_value, :double, 4
+        optional :array_value, :message, 5, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.ArrayValue"
+        optional :kvlist_value, :message, 6, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValueList"
+        optional :bytes_value, :bytes, 7
+      end
+    end
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.common.v1.ArrayValue" do
+      repeated :values, :message, 1, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.AnyValue"
+    end
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValueList" do
+      repeated :values, :message, 1, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValue"
+    end
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValue" do
+      optional :key, :string, 1
+      optional :value, :message, 2, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.AnyValue"
+    end
+    add_message "scout_apm.logging.loggers.opentelemetry.proto.common.v1.InstrumentationScope" do
+      optional :name, :string, 1
+      optional :version, :string, 2
+      repeated :attributes, :message, 3, "scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValue"
+      optional :dropped_attributes_count, :uint32, 4
+    end
+  end
+end
 
 module ScoutApm
   module Logging
@@ -17,11 +44,11 @@ module ScoutApm
         module Proto
           module Common
             module V1
-              AnyValue = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.common.v1.AnyValue').msgclass
-              ArrayValue = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.common.v1.ArrayValue').msgclass
-              KeyValueList = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.common.v1.KeyValueList').msgclass
-              KeyValue = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.common.v1.KeyValue').msgclass
-              InstrumentationScope = ::Google::Protobuf::DescriptorPool.generated_pool.lookup('opentelemetry.proto.common.v1.InstrumentationScope').msgclass
+              AnyValue = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.common.v1.AnyValue").msgclass
+              ArrayValue = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.common.v1.ArrayValue").msgclass
+              KeyValueList = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValueList").msgclass
+              KeyValue = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.common.v1.KeyValue").msgclass
+              InstrumentationScope = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("scout_apm.logging.loggers.opentelemetry.proto.common.v1.InstrumentationScope").msgclass
             end
           end
         end
