@@ -28,14 +28,3 @@ RSpec.configure do |config|
     RSpec::Mocks.space.reset_all
   end
 end
-
-def wait_for_process_with_timeout!(name, timeout_time)
-  Timeout::timeout(timeout_time) do
-    loop do
-      break if `pgrep #{name} --runstates D,R,S`.strip != ""
-      sleep 0.1
-    end
-  end
-
-  sleep 1
-end
