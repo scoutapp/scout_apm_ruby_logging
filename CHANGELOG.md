@@ -1,3 +1,6 @@
+## 1.0.0
+* Vendor OpenTelemetry SDK and remove the use of the collector and monitor processes.
+
 ## 0.0.13
 * Add ability to handle other libraries setting the Rails logger.
 * Overwrite comparability methods on the proxy class. Have proxy class inherit from Object again.
