@@ -13,6 +13,7 @@ module ScoutApm
     module Loggers
       module OpenTelemetry
         class << self
+          # Overwritten on setup to be the internal logger.
           # @return [Object, Logger] configured Logger or a default STDOUT Logger.
           def logger
             @logger ||= ::Logger.new($stdout, level: ENV['OTEL_LOG_LEVEL'] || ::Logger::INFO)
@@ -42,6 +43,8 @@ module ScoutApm
         end
 
         def self.setup(context)
+          @logger = context.logger
+
           exporter = OpenTelemetry::Exporter::OTLP::LogsExporter.new(endpoint: context.config.value('logs_reporting_endpoint_http'))
           processor = OpenTelemetry::SDK::Logs::Export::BatchLogRecordProcessor.new(exporter)
           ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider = OpenTelemetry::SDK::Logs::LoggerProvider.new(resource: scout_resource(context))
