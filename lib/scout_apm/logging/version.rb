@@ -2,6 +2,6 @@
 
 module ScoutApm
   module Logging
-    VERSION = '0.0.13'
+    VERSION = '1.0.0'
   end
 end
