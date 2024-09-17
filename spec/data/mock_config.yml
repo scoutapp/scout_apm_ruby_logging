@@ -9,9 +9,6 @@ common: &defaults
   ###
   logs_monitor: true
   logs_ingest_key: "00001000010000abc"
-  logs_monitored: ["/tmp/fake_log_file.log"]
-  # Need to give a high enough number for the original health check to pass
-  monitor_interval: 10
 
 production:
   <<: *defaults

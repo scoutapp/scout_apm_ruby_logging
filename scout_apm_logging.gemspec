@@ -17,9 +17,16 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.6'
 
+  s.add_dependency 'googleapis-common-protos-types'
+  s.add_dependency 'google-protobuf', '< 3.18'
+  s.add_dependency 'opentelemetry-api'
+  s.add_dependency 'opentelemetry-common'
+  s.add_dependency 'opentelemetry-instrumentation-base'
+  s.add_dependency 'opentelemetry-sdk', '>= 1.2'
   s.add_dependency 'scout_apm'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rubocop', '1.50.2'
   s.add_development_dependency 'rubocop-ast', '1.30.0'
+  s.add_development_dependency 'webmock'
 end

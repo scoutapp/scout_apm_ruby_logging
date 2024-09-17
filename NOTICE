@@ -1,0 +1,4 @@
+This project contains third-party libraries licensed under the Apache License 2.0:
+
+- opentelemetry-logs-sdk: Licensed under the Apache License 2.0
+  See lib/scout_apm/logging/loggers/opentelemetry/LICENSE for details.

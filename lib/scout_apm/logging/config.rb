@@ -48,35 +48,18 @@ module ScoutApm
         log_file_path
         log_class
         logs_monitor
-        logs_monitored
         logs_ingest_key
         logs_capture_level
         logs_config
         logs_reporting_endpoint
+        logs_reporting_endpoint_http
         logs_proxy_log_dir
         logs_log_file_size
-        manager_lock_file
-        monitor_pid_file
-        monitor_state_file
-        monitor_interval
-        monitor_interval_delay
-        collector_sending_queue_storage_dir
-        collector_offset_storage_dir
-        collector_pid_file
-        collector_download_dir
-        collector_config_file
-        collector_log_level
-        collector_version
-        health_check_port
       ].freeze
 
       SETTING_COERCIONS = {
         'logs_monitor' => BooleanCoercion.new,
-        'logs_monitored' => JsonCoercion.new,
-        'logs_log_file_size' => IntegerCoercion.new,
-        'monitor_interval' => IntegerCoercion.new,
-        'monitor_interval_delay' => IntegerCoercion.new,
-        'health_check_port' => IntegerCoercion.new
+        'logs_log_file_size' => IntegerCoercion.new
       }.freeze
 
       # The bootstrapped, and initial config that we attach to the context. Will be swapped out by
@@ -95,16 +78,10 @@ module ScoutApm
         overlays = [
           ConfigEnvironment.new,
           ConfigFile.new(context, file_path, config),
-          ConfigDynamic.new,
-          ConfigState.new(context),
           ConfigDefaults.new,
           ConfigNull.new
         ]
         new(context, overlays)
-      end
-
-      def state
-        @overlays.find { |overlay| overlay.is_a? ConfigState }
       end
 
       def value(key)
@@ -131,119 +108,16 @@ module ScoutApm
         end
       end
 
-      # Dynamically set state based on the application.
-      class ConfigDynamic
-        @values_to_set = {
-          'health_check_port': nil
-        }
-
-        class << self
-          attr_reader :values_to_set
-
-          def set_value(key, value)
-            @values_to_set[key] = value
-          end
-        end
-
-        def value(key)
-          self.class.values_to_set[key]
-        end
-
-        def has_key?(key)
-          self.class.values_to_set.key?(key)
-        end
-
-        def name
-          'dynamic'
-        end
-      end
-
-      # State that is persisted and communicated upon by multiple processes.
-      class ConfigState
-        @values_to_set = {
-          'logs_monitored': [],
-          'health_check_port': nil
-        }
-
-        class << self
-          attr_reader :values_to_set
-
-          def set_value(key, value)
-            @values_to_set[key] = value
-          end
-
-          def get_values_to_set
-            @values_to_set.keys.map(&:to_s)
-          end
-        end
-
-        attr_reader :context, :state
-
-        def initialize(context)
-          @context = context
-
-          # Note, the config on the context we are passing in here comes from the Config.without_file. We
-          # won't be aware of a state file that was defined in a config file, but this would be a very
-          # rare thing to have happen as this is more of an internal config value.
-          @state = State.new(context)
-
-          set_values_from_state
-        end
-
-        def value(key)
-          self.class.values_to_set[key]
-        end
-
-        def has_key?(key)
-          self.class.values_to_set.key?(key)
-        end
-
-        def name
-          'state'
-        end
-
-        def flush_state!
-          state.flush_to_file!
-        end
-
-        def add_log_locations!(updated_log_locations)
-          state.flush_to_file!(updated_log_locations)
-        end
-
-        private
-
-        def set_values_from_state
-          data = state.load_state_from_file
-
-          return unless data
-
-          data.each do |key, value|
-            self.class.set_value(key, value)
-          end
-        end
-      end
-
       # Defaults in case no config file has been found.
       class ConfigDefaults
         DEFAULTS = {
           'log_level' => 'info',
-          'logs_monitored' => [],
           'logs_capture_level' => 'debug',
+          'logs_ingest_key' => '',
           'logs_reporting_endpoint' => 'https://otlp.scoutotel.com:4317',
+          'logs_reporting_endpoint_http' => 'https://otlp.scoutotel.com:4318/v1/logs',
           'logs_proxy_log_dir' => '/tmp/scout_apm/logs/',
-          'logs_log_file_size' => 1024 * 1024 * 10,
-          'manager_lock_file' => '/tmp/scout_apm/monitor_lock_file.lock',
-          'monitor_pid_file' => '/tmp/scout_apm/scout_apm_log_monitor.pid',
-          'monitor_state_file' => '/tmp/scout_apm/scout_apm_log_monitor_state.json',
-          'monitor_interval' => 60,
-          'monitor_interval_delay' => 60,
-          'collector_log_level' => 'error',
-          'collector_offset_storage_dir' => '/tmp/scout_apm/file_storage/receiver/',
-          'collector_sending_queue_storage_dir' => '/tmp/scout_apm/file_storage/otc/',
-          'collector_pid_file' => '/tmp/scout_apm/scout_apm_otel_collector.pid',
-          'collector_download_dir' => '/tmp/scout_apm/',
-          'collector_config_file' => '/tmp/scout_apm/config.yml',
-          'collector_version' => '0.102.1'
+          'logs_log_file_size' => 1024 * 1024 * 10
         }.freeze
 
         def value(key)

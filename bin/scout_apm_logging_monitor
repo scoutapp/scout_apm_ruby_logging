@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-
-require_relative '../lib/scout_apm/logging/monitor/_rails.rb'
-require_relative "../lib/scout_apm/logging/monitor/monitor.rb"
-
-ScoutApm::Logging::Monitor.instance.setup!

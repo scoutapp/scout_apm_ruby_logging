@@ -7,7 +7,3 @@ gems/*.lock
 .idea
 # Ignore log files
 log/*.log
-# Ignore checksum files
-tooling/*
-!tooling/*.md
-!tooling/*.rb
