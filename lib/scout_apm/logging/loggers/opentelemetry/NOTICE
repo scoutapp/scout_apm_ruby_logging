@@ -1,0 +1,9 @@
+This product includes software developed by The OpenTelemetry Authors
+under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+
+Modifications:
+The following modifications were made on Sep 17 2024 by Jack Rothrock.
+- Modified the protobuf definitions to prevent collisions.
+- Decreased default BLRP Export Batch Size from 512 to 256.
+- Update logger to use the Scout Logging internal logger.
+- Update logic around logger_provider setting on the OpenTelemetry Module.
