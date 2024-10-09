@@ -1,3 +1,6 @@
+## 1.0.1
+* Update google-protobuf dependency to resolve to any version less than 4.x.x.
+
 ## 1.0.0
 * Vendor OpenTelemetry SDK and remove the use of the collector and monitor processes.
 
