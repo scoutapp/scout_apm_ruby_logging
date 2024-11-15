@@ -28,7 +28,7 @@ module ScoutApm
           # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
           attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
-          message = "#{attributes_to_log.to_json}\n"
+          message = "#{attributes_to_log.values.join}\n"
           attributes_to_log['raw_bytes'] = message
 
           ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
