@@ -36,7 +36,7 @@ describe ScoutApm::Logging do
     sleep 5
 
     # Call the app to generate the logs
-    `curl localhost:8080`
+    `curl localhost:9292`
 
     sleep 5
 

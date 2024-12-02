@@ -29,7 +29,6 @@ module ScoutApm
           attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
           message = "#{attributes_to_log.to_json}\n"
-          attributes_to_log['raw_bytes'] = message
 
           ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
             name: 'scout_apm',

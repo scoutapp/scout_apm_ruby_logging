@@ -1,3 +1,4 @@
 eval_gemfile("../Gemfile")
 
 gem "rails"
+gem "puma"
