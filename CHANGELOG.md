@@ -1,3 +1,7 @@
+## 1.0.2
+* Fix / Re-add logging of configuration values on startup.
+* Remove raw_bytes from payload.
+
 ## 1.0.1
 * Update google-protobuf dependency to resolve to any version less than 4.x.x.
 
