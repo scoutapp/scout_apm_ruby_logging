@@ -56,11 +56,13 @@ module ScoutApm
 
           return {} unless layer
 
-          name, action = layer.name.split('/')
+          layer_parts = layer.name.split('/')
+          name_parts = layer_parts[0..-2]
+          action = layer_parts[-1]
 
-          return {} unless name
+          return {} unless name_parts.any? && action
 
-          updated_name = name.split('_').map(&:capitalize).join
+          updated_name = name_parts.map(&:capitalize).map{|item| item.split("_").map(&:capitalize).join}.join("::")
 
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
 
