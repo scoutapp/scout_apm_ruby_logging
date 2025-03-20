@@ -78,7 +78,14 @@ module ScoutApm
                                           name_parts[0]
                                         end
 
-          { derived_key => derived_value_of_scout_name }
+          {}.tap do |layer_attributes|
+            if layer_type == 'job'
+              queue = req.instance_variable_get('@layers').find { |lay| lay.type == 'Queue' }
+              layer_attributes[:job_queue] = queue.name if queue
+            end
+
+            layer_attributes[derived_key] = derived_value_of_scout_name
+          end
         end
 
         def scout_context
