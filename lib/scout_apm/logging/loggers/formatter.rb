@@ -56,9 +56,14 @@ module ScoutApm
 
           return {} unless layer
 
+          layer_type = layer.type.downcase
+
           layer_parts = layer.name.split('/')
-          name_parts = layer_parts[0..-2]
-          action = layer_parts[-1]
+          name_parts, action = if layer_type == 'controller'
+                                 [layer_parts[0..-2], layer_parts[-1]]
+                               else
+                                 [layer_parts, nil]
+                               end
 
           return {} unless name_parts.any?
 
@@ -70,7 +75,7 @@ module ScoutApm
           derived_value_of_scout_name = if action
                                           "#{updated_name}#{layer.type.capitalize}##{action}"
                                         else
-                                          name
+                                          name_parts[0]
                                         end
 
           { derived_key => derived_value_of_scout_name }
