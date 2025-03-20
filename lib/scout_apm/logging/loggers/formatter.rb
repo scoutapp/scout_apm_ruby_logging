@@ -56,11 +56,18 @@ module ScoutApm
 
           return {} unless layer
 
-          name, action = layer.name.split('/')
+          layer_type = layer.type.downcase
 
-          return {} unless name
+          layer_parts = layer.name.split('/')
+          name_parts, action = if layer_type == 'controller'
+                                 [layer_parts[0..-2], layer_parts[-1]]
+                               else
+                                 [layer_parts, nil]
+                               end
 
-          updated_name = name.split('_').map(&:capitalize).join
+          return {} unless name_parts.any?
+
+          updated_name = name_parts.map(&:capitalize).map { |item| item.split('_').map(&:capitalize).join }.join('::')
 
           derived_key = "#{layer.type.downcase}_entrypoint".to_sym
 
@@ -68,7 +75,7 @@ module ScoutApm
           derived_value_of_scout_name = if action
                                           "#{updated_name}#{layer.type.capitalize}##{action}"
                                         else
-                                          name
+                                          name_parts[0]
                                         end
 
           { derived_key => derived_value_of_scout_name }
