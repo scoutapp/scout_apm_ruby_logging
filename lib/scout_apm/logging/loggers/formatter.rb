@@ -36,7 +36,7 @@ module ScoutApm
           ).on_emit(
             severity_text: severity,
             severity_number: ::Logger::Severity.const_get(severity),
-            attributes: attributes_to_log,
+            attributes: attributes_to_log.transform_keys(&:to_s),
             timestamp: time,
             body: msg,
             context: ::OpenTelemetry::Context.current
