@@ -104,7 +104,7 @@ module ScoutApm
       def all_settings
         KNOWN_CONFIG_OPTIONS.inject([]) do |memo, key|
           o = overlay_for_key(key)
-          memo << { key: key, value: value(key).inspect, source: o.name }
+          memo << { key:, value: value(key).inspect, source: o.name }
         end
       end
 

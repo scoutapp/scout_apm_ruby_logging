@@ -2,11 +2,8 @@
 require 'logger'
 require 'opentelemetry'
 require 'opentelemetry/sdk'
-
-require_relative 'api/logs'
-require_relative 'sdk/logs'
-require_relative 'exporter/exporter/otlp/version'
-require_relative 'exporter/exporter/otlp/logs_exporter'
+require 'opentelemetry-logs-sdk'
+require 'opentelemetry/exporter/otlp_logs'
 
 module ScoutApm
   module Logging
@@ -43,12 +40,10 @@ module ScoutApm
         end
 
         def self.setup(context)
-          @logger = context.logger
-
-          exporter = OpenTelemetry::Exporter::OTLP::LogsExporter.new(endpoint: context.config.value('logs_reporting_endpoint_http'))
-          processor = OpenTelemetry::SDK::Logs::Export::BatchLogRecordProcessor.new(exporter)
-          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider = OpenTelemetry::SDK::Logs::LoggerProvider.new(resource: scout_resource(context))
-          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.add_log_record_processor(processor)
+          exporter = ::OpenTelemetry::Exporter::OTLP::Logs::LogsExporter.new(endpoint: context.config.value('logs_reporting_endpoint_http'))
+          processor = ::OpenTelemetry::SDK::Logs::Export::BatchLogRecordProcessor.new(exporter)
+          OpenTelemetry.logger_provider = ::OpenTelemetry::SDK::Logs::LoggerProvider.new(resource: scout_resource(context))
+          OpenTelemetry.logger_provider.add_log_record_processor(processor)
         end
 
         def self.scout_resource(context)

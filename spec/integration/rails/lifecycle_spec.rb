@@ -84,7 +84,7 @@ describe ScoutApm::Logging do
     gz = Zlib::GzipReader.new(StringIO.new(body))
     uncompressed = gz.read
 
-    value = ScoutApm::Logging::Loggers::Opentelemetry::Proto::Collector::Logs::V1::ExportLogsServiceRequest.decode(uncompressed)
+    value = ::Opentelemetry::Proto::Collector::Logs::V1::ExportLogsServiceRequest.decode(uncompressed)
     value_hash = value.to_h
 
     value_hash[:resource_logs].map do |item|
