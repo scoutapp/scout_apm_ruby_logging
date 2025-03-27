@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors     = 'Scout APM'
   s.email       = ['support@scoutapp.com']
   s.homepage    = 'https://github.com/scoutapp/scout_apm_ruby_logging'
-  s.summary     = 'Ruby Logging Support'
+  s.summary     = 'Managed log monitoring for Ruby applications.'
   s.description = 'Sets up log monitoring for Scout APM Ruby clients.'
   s.license     = 'MIT'
 
