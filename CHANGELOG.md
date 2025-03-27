@@ -1,3 +1,6 @@
+## 1.1.0
+* Bump vendored SDK version to 0.2.0.
+
 ## 1.0.3
 * Add capturing of queue for background jobs.
 * Fix entrypoint name capturing for namespaced controllers.
