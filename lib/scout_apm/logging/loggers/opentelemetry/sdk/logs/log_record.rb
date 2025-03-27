@@ -12,6 +12,10 @@ module ScoutApm
           module Logs
             # Implementation of OpenTelemetry::Logs::LogRecord that records log events.
             class LogRecord < OpenTelemetry::Logs::LogRecord
+              EMPTY_ATTRIBUTES = {}.freeze
+
+              private_constant :EMPTY_ATTRIBUTES
+
               attr_accessor :timestamp,
                             :observed_timestamp,
                             :severity_text,
@@ -52,6 +56,8 @@ module ScoutApm
               #   source of the log, desrived from the LoggerProvider.
               # @param [optional OpenTelemetry::SDK::InstrumentationScope] instrumentation_scope
               #   The instrumentation scope, derived from the emitting Logger
+              # @param [optional] OpenTelemetry::SDK::LogRecordLimits] log_record_limits
+              #   Attribute limits
               #
               #
               # @return [LogRecord]
@@ -66,7 +72,8 @@ module ScoutApm
                 span_id: nil,
                 trace_flags: nil,
                 resource: nil,
-                instrumentation_scope: nil
+                instrumentation_scope: nil,
+                log_record_limits: nil
               )
                 @timestamp = timestamp
                 @observed_timestamp = observed_timestamp || timestamp || Time.now
@@ -79,7 +86,10 @@ module ScoutApm
                 @trace_flags = trace_flags
                 @resource = resource
                 @instrumentation_scope = instrumentation_scope
+                @log_record_limits = log_record_limits || LogRecordLimits::DEFAULT
                 @total_recorded_attributes = @attributes&.size || 0
+
+                trim_attributes(@attributes)
               end
 
               def to_log_record_data
@@ -105,6 +115,51 @@ module ScoutApm
                 return unless timestamp.is_a?(Time)
 
                 (timestamp.to_r * 10**9).to_i
+              end
+
+              def trim_attributes(attributes)
+                return if attributes.nil?
+
+                # truncate total attributes
+                truncate_attributes(attributes, @log_record_limits.attribute_count_limit)
+
+                # truncate attribute values
+                truncate_attribute_values(attributes, @log_record_limits.attribute_length_limit)
+
+                # validate attributes
+                validate_attributes(attributes)
+
+                nil
+              end
+
+              def truncate_attributes(attributes, attribute_limit)
+                excess = attributes.size - attribute_limit
+                excess.times { attributes.shift } if excess.positive?
+              end
+
+              def validate_attributes(attrs)
+                # Similar to Internal.valid_attributes?, but with different messages
+                # Future refactor opportunity: https://github.com/open-telemetry/opentelemetry-ruby/issues/1739
+                attrs.keep_if do |k, v|
+                  if !::OpenTelemetry::SDK::Internal.valid_key?(k)
+                    OpenTelemetry.handle_error(message: "invalid log record attribute key type #{k.class}, #{k} on record: '#{body}'")
+                    return false
+                  elsif !::OpenTelemetry::SDK::Internal.valid_value?(v)
+                    OpenTelemetry.handle_error(message: "invalid log record attribute value type #{v.class} for key '#{k}' on record: '#{body}'")
+                    return false
+                  end
+
+                  true
+                end
+              end
+
+              def truncate_attribute_values(attributes, attribute_length_limit)
+                return EMPTY_ATTRIBUTES if attributes.nil?
+                return attributes if attribute_length_limit.nil?
+
+                attributes.transform_values! { |value| ::OpenTelemetry::Common::Utilities.truncate_attribute_value(value, attribute_length_limit) }
+
+                attributes
               end
             end
           end

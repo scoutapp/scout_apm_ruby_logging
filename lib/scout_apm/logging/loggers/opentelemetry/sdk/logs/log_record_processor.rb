@@ -3,7 +3,6 @@
 # Copyright The OpenTelemetry Authors
 #
 # SPDX-License-Identifier: Apache-2.0
-
 module ScoutApm
   module Logging
     module Loggers
@@ -29,7 +28,7 @@ module ScoutApm
               # the process after an invocation, but before the `Processor` exports
               # the completed spans.
               #
-              # @param [Numeric] timeout An optional timeout in seconds.
+              # @param [optional Numeric] timeout An optional timeout in seconds.
               # @return [Integer] Export::SUCCESS if no error occurred, Export::FAILURE if
               #   a non-specific failure occurred, Export::TIMEOUT if a timeout occurred.
               def force_flush(timeout: nil)
@@ -38,7 +37,7 @@ module ScoutApm
 
               # Called when {LoggerProvider#shutdown} is called.
               #
-              # @param [Numeric] timeout An optional timeout in seconds.
+              # @param [optional Numeric] timeout An optional timeout in seconds.
               # @return [Integer] Export::SUCCESS if no error occurred, Export::FAILURE if
               #   a non-specific failure occurred, Export::TIMEOUT if a timeout occurred.
               def shutdown(timeout: nil)

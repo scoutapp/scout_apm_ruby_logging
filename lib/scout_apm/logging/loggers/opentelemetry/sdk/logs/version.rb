@@ -11,7 +11,7 @@ module ScoutApm
         module SDK
           module Logs
             # Current OpenTelemetry logs sdk version
-            VERSION = '0.1.0'
+            VERSION = '0.2.0'
           end
         end
       end
