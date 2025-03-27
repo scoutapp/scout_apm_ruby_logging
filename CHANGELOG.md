@@ -1,3 +1,7 @@
+## 1.0.3
+* Add capturing of queue for background jobs.
+* Fix entrypoint name capturing for namespaced controllers.
+
 ## 1.0.2
 * Fix / Re-add logging of configuration values on startup.
 * Remove raw_bytes from payload.
