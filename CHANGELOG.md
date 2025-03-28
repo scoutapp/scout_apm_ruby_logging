@@ -1,3 +1,9 @@
+## 2.0.0
+* Remove vendored opentelmetry SDK.
+* Add support for Ruby 3.4.
+* Breaking: Drop support for Ruby 2.6, 2.7, 3.0. 
+  * Note: The 1.x release is still maintained.
+
 ## 1.1.0
 * Bump vendored SDK version to 0.2.0.
 
