@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/scoutapp/scout_apm_ruby_logging/actions/workflows/test.yml/badge.svg)](https://github.com/scoutapp/scout_apm_ruby_logging/actions)
 
-A Ruby gem for detailed, easy to navigate, managed log monitoring.
+A Ruby gem for detailed, easy to navigate, managed log monitoring. Supports Ruby 2.6+.
 
 Sign up for an account at https://www.scoutapm.com to start monitoring your logs and application performance in minutes.
 
@@ -32,6 +32,11 @@ Update your [RAILS_ROOT/config/scout_apm.yml](https://scoutapm.com/apps/new_ruby
 
 Deploy :rocket:
 
+## Versions
+We currently maintain two versions: 2.x (Ruby 3.1+) and 1.x (2.6-3.3). These versions/branches have feature parity and a similar release cadence.
+
+The `main` branch contains the 2.x version, while the `1.x` branch contains the 1.x version.
+
 ## Testing
 To run the entire test suite:
 ```ruby
@@ -45,7 +50,7 @@ bundle exec rake test file=/path/to/spec/_spec.rb
 
 To run test(s) against a specific Ruby version:
 ```ruby
-DOCKER_RUBY_VERSION=3.3 bundle exec rake test
+DOCKER_RUBY_VERSION=3.4 bundle exec rake test
 ```
 
 ## Local
