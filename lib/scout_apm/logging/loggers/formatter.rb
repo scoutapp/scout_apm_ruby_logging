@@ -14,7 +14,7 @@ module ScoutApm
 
         def call(severity, time, progname, msg) # rubocop:disable Metrics/AbcSize
           attributes_to_log = {
-            severity: severity,
+            severity:,
             time: format_datetime(time),
             msg: msg2str(msg)
           }
