@@ -2,3 +2,4 @@ eval_gemfile("../Gemfile")
 
 gem "rails"
 gem "puma"
+gem "benchmark-ips"

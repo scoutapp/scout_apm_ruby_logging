@@ -26,21 +26,21 @@ module ScoutApm
           attributes_to_log.merge!(scout_layer)
           attributes_to_log.merge!(scout_context)
           # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
-          attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
+          # attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
           message = "#{attributes_to_log.to_json}\n"
 
-          ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
-            name: 'scout_apm',
-            version: '0.1.0'
-          ).on_emit(
-            severity_text: severity,
-            severity_number: ::Logger::Severity.const_get(severity),
-            attributes: attributes_to_log.transform_keys(&:to_s),
-            timestamp: time,
-            body: msg,
-            context: ::OpenTelemetry::Context.current
-          )
+          # ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
+          #   name: 'scout_apm',
+          #   version: '0.1.0'
+          # ).on_emit(
+          #   severity_text: severity,
+          #   severity_number: ::Logger::Severity.const_get(severity),
+          #   attributes: attributes_to_log.transform_keys(&:to_s),
+          #   timestamp: time,
+          #   body: msg,
+          #   context: ::OpenTelemetry::Context.current
+          # )
           message
         end
 
