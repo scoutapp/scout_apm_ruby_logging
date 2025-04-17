@@ -12,7 +12,7 @@ jobs:
     env:
       DOCKER_RUBY_VERSION: ${{ matrix.ruby }}
       BUNDLE_GEMFILE: gems/rails.gemfile
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Extract Library Version
