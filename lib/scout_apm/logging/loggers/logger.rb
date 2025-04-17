@@ -7,6 +7,57 @@ module ScoutApm
       class FileLogger < ::Logger
         include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
 
+        # Taken from ::Logger. Progname becomes message if no block is given.
+        def debug(progname = nil, &block)
+          return true if level > DEBUG
+
+          # short circuit the block to update the message. #add would eventually call it.
+          # https://github.com/ruby/logger/blob/v1.7.0/lib/logger.rb#L675
+          progname = yield if block_given?
+          message = add_log_file_and_line_to_message(progname) if progname
+          add(DEBUG, message, nil, &block)
+        end
+
+        def info(progname = nil, &block)
+          return true if level > INFO
+
+          progname = yield if block_given?
+          message = add_log_file_and_line_to_message(progname) if progname
+          add(INFO, message, nil, &block)
+        end
+
+        def warn(progname = nil, &block)
+          return true if level > WARN
+
+          progname = yield if block_given?
+          message = add_log_file_and_line_to_message(progname) if progname
+          add(WARN, message, nil, &block)
+        end
+
+        def error(progname = nil, &block)
+          return true if level > ERROR
+
+          progname = yield if block_given?
+          message = add_log_file_and_line_to_message(progname) if progname
+          add(ERROR, message, nil, &block)
+        end
+
+        def fatal(progname = nil, &block)
+          return true if level > FATAL
+
+          progname = yield if block_given?
+          message = add_log_file_and_line_to_message(progname) if progname
+          add(FATAL, message, nil, &block)
+        end
+
+        def unknown(progname = nil, &block)
+          return true if level > UNKNOWN
+
+          progname = yield if block_given?
+          message = add_log_file_and_line_to_message(progname) if progname
+          add(UNKNOWN, message, nil, &block)
+        end
+
         # Other loggers may be extended with additional methods that have not been applied to this file logger.
         # Most likely, these methods will still utilize the exiting logging methods to write to the IO device,
         # however, if this is not the case we may miss logs. With that being said, we shouldn't impact the original
@@ -20,6 +71,24 @@ module ScoutApm
         # More impactful for the broadcast logger.
         def respond_to_missing?(name, *_args)
           super
+        end
+
+        private
+
+        def first_app_location(locations = caller_locations)
+          locations.find { |loc| loc.path.include?(Rails.root.to_s) }
+        end
+
+        def add_log_file_and_line_to_message(message)
+          return message unless message.is_a?(String)
+
+          file = first_app_location(caller_locations(1, 10))
+          return message unless file
+
+          file_path = file.path.split('/').last
+          line_number = file.lineno
+
+          "[#{file_path}:#{line_number}] #{message}"
         end
       end
 

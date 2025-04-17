@@ -25,8 +25,6 @@ module ScoutApm
           attributes_to_log.merge!(scout_transaction_id)
           attributes_to_log.merge!(scout_layer)
           attributes_to_log.merge!(scout_context)
-          # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
-          attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
           message = "#{attributes_to_log.to_json}\n"
 
@@ -101,15 +99,6 @@ module ScoutApm
 
         def scout_transaction_id
           { "scout_transaction_id": ScoutApm::RequestManager.lookup.transaction_id }
-        end
-
-        def local_log_location
-          # Should give us the last local stack which called the log within just the last couple frames.
-          last_local_location = caller[0..15].find { |path| path.include?(Rails.root.to_s) }
-
-          return {} unless last_local_location
-
-          { 'log_location' => last_local_location }
         end
 
         def context
