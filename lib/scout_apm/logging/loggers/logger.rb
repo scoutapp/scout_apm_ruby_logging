@@ -28,6 +28,16 @@ module ScoutApm
           original_warn("(#{file}:#{line}): #{msg}")
       end
 
+      def warn_four(msg, *args)
+        # Get the caller (this returns the stack trace where the method was called from)
+        caller_info = caller_locations(2,1).first  # Get the first entry in the call stack
+        file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+        line = caller_info.lineno
+
+        # Log the message with the file and line number where the log was called
+        original_warn("(#{file}:#{line}): #{msg}")
+    end
+
       def warn_three(msg)
         last_local_location = caller[0..15].find { |path| path.include?(Rails.root.to_s) }
         file = last_local_location.split("/")[-1]  # Split the string into file and line number
