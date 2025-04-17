@@ -7,6 +7,37 @@ module ScoutApm
       class FileLogger < ::Logger
         include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
 
+        alias_method :original_warn, :warn
+
+        def warn_first(msg, *args)
+            # Get the caller (this returns the stack trace where the method was called from)
+            caller_info = caller(1).first  # Get the first entry in the call stack
+            file, line = caller_info.split(':')  # Split the string into file and line number
+
+            # Log the message with the file and line number where the log was called
+            original_warn("(#{file}:#{line}): #{msg}")
+        end
+
+        def warn_two(msg, *args)
+          # Get the caller (this returns the stack trace where the method was called from)
+          caller_info = caller_locations.lazy.drop(1).first  # Get the first entry in the call stack
+          file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+          line = caller_info.lineno
+
+          # Log the message with the file and line number where the log was called
+          original_warn("(#{file}:#{line}): #{msg}")
+      end
+
+      def warn_three(msg)
+        last_local_location = caller[0..15].find { |path| path.include?(Rails.root.to_s) }
+        file = last_local_location.split("/")[-1]  # Split the string into file and line number
+        line = last_local_location.split(":")[-1]
+        # Log the message with the file and line number where the log was called
+        original_warn("(#{file}:#{line}): #{msg}")
+      end
+      # alias_method :warn, :warn_two
+
+
         # Other loggers may be extended with additional methods that have not been applied to this file logger.
         # Most likely, these methods will still utilize the exiting logging methods to write to the IO device,
         # however, if this is not the case we may miss logs. With that being said, we shouldn't impact the original

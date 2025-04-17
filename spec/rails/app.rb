@@ -4,6 +4,7 @@ begin
 rescue LoadError # rubocop:disable Lint/SuppressedException
 end
 
+require 'benchmark/ips'
 require 'action_controller/railtie'
 require 'logger'
 require 'scout_apm_logging'
@@ -21,7 +22,22 @@ end
 
 class RootController < ActionController::Base
   def index
-    Rails.logger.warn('Add location log attributes')
+    Benchmark.ips do |b|
+      b.report('patched_warn') do
+        Rails.logger.warn_first('Add location log attributes')
+      end
+      b.report('patched_warn_2') do
+        Rails.logger.warn_two('Add location log attributes')
+      end
+      b.report('patched_warn_3') do
+        Rails.logger.warn_three('Add location log attributes')
+      end
+      b.report('original_warn') do
+        Rails.logger.original_warn('Add location log attributes')
+      end
+      b.compare!
+    end
+
     Rails.logger.tagged('TEST').info('Some log')
     Rails.logger.tagged('YIELD') { logger.info('Yield Test') }
     Rails.logger.info('Another Log')
