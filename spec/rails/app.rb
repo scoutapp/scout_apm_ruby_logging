@@ -20,12 +20,14 @@ class App < ::Rails::Application
 end
 
 class RootController < ActionController::Base
-  def index
-    Rails.logger.warn('Add location log attributes')
+  def index # rubocop:disable Metrics/AbcSize
     Rails.logger.tagged('TEST').info('Some log')
     Rails.logger.tagged('YIELD') { logger.info('Yield Test') }
     Rails.logger.info('Another Log')
     Rails.logger.debug('Should not be captured')
+    Rails.logger.warn('Warn level log')
+    Rails.logger.error('Error level log')
+    Rails.logger.fatal('Fatal level log')
 
     render plain: Rails.version
   end
