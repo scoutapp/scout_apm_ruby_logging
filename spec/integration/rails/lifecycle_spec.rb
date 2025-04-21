@@ -60,6 +60,8 @@ describe ScoutApm::Logging do
       end
     end
 
+    puts lines
+
     local_messages = lines.map { |item| item['msg'] }
     puts local_messages
 
