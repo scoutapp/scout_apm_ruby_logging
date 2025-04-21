@@ -94,15 +94,16 @@ module ScoutApm
           end
         end
 
+        # Ideally, we would pass an additional argument to the formatter, but
+        # we run into issues with how tagged logging is implemented. As such,
+        # this is a work around for tagged logging and incorrect passed arguments.
+        # May need to move to fiber at some point.
         def format_message(severity, datetime, progname, msg)
-          formatter = @formatter || @default_formatter
-          args = [severity, datetime, progname, msg]
-          args << find_log_location if formatter.method(:call).arity == 5
-
-          # Clear cached log location to prevent location bleed.
-          @find_log_location = nil
-
-          formatter.call(*args)
+          Thread.current[:scout_log_location] = "#{find_log_location.path}:#{find_log_location.lineno}" if find_log_location
+          super(severity, datetime, progname, msg).tap do |_|
+            @find_log_location = nil
+            Thread.current[:scout_log_location] = nil
+          end
         end
 
         def add_log_file_and_line_to_message(message)
