@@ -8,6 +8,18 @@ module ScoutApm
         include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
 
         alias_method :original_warn, :warn
+        alias_method :original_info, :info
+
+        # def info(*args)
+        #   # Get the caller (this returns the stack trace where the method was called from)
+        #   caller_info = caller_locations(1,15)
+        #   binding.irb
+        #   file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+        #   line = caller_info.lineno
+    
+        #   # Log the message with the file and line number where the log was called
+        #   original_warn("(#{file}:#{line}): #{msg}")
+        # end
 
         def warn_first(msg, *args)
             # Get the caller (this returns the stack trace where the method was called from)
@@ -26,7 +38,7 @@ module ScoutApm
 
           # Log the message with the file and line number where the log was called
           original_warn("(#{file}:#{line}): #{msg}")
-      end
+        end
 
       def warn_four(msg, *args)
         # Get the caller (this returns the stack trace where the method was called from)
@@ -41,6 +53,17 @@ module ScoutApm
     def warn_five(msg, *args)
       # Get the caller (this returns the stack trace where the method was called from)
       caller_info = caller_locations(1,10).find {|loc| loc.path.include?(Rails.root.to_s)}  # Get the first entry in the call stack
+      file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+      line = caller_info.lineno
+
+      # Log the message with the file and line number where the log was called
+      original_warn("(#{file}:#{line}): #{msg}")
+    end
+
+    def warn_six(msg, *args)
+      # Get the caller (this returns the stack trace where the method was called from)
+      caller_info = find_log_location
+      
       file = caller_info.path.split("/")[-1]  # Split the string into file and line number
       line = caller_info.lineno
 
@@ -71,6 +94,24 @@ module ScoutApm
         # More impactful for the broadcast logger.
         def respond_to_missing?(name, *_args)
           super
+        end
+
+        private 
+
+        def find_log_location
+          @location ||= begin
+            call_stack = caller_locations(1, 15)
+            rails_location = call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
+            return rails_location if rails_location
+            filtered_locations = call_stack.reject { |loc| loc.path.include?('lib/scout_apm_logging') }
+            filtered_locations = call_stack.reject { |loc| loc.path.include?('broadcast_logger.rb') }
+            return call_stack.first if filtered_locations.empty?
+          end
+        end
+
+
+        def format_message(severity, datetime, progname, msg)
+          (@formatter || @default_formatter).call(severity, datetime, progname, msg)
         end
       end
 
