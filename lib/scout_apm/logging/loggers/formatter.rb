@@ -12,7 +12,7 @@ module ScoutApm
       class Formatter < ::Logger::Formatter
         DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%LZ'
 
-        def call(severity, time, progname, msg) # rubocop:disable Metrics/AbcSize
+        def call(severity, time, progname, msg, log_location = nil) # rubocop:disable Metrics/AbcSize
           attributes_to_log = {
             severity: severity,
             time: format_datetime(time),
@@ -21,6 +21,7 @@ module ScoutApm
 
           attributes_to_log[:progname] = progname if progname
           attributes_to_log['service.name'] = service_name
+          attributes_to_log['log_location'] = log_location.path if log_location
 
           attributes_to_log.merge!(scout_transaction_id)
           attributes_to_log.merge!(scout_layer)

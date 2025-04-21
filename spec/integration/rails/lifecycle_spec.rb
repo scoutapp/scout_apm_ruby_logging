@@ -6,7 +6,7 @@ require 'stringio'
 require_relative '../../rails/app'
 
 ScoutApm::Logging::Loggers::FileLogger.class_exec do
-  define_method(:first_app_location) do |locations|
+  define_method(:filter_log_location) do |locations|
     locations.find { |loc| loc.path.include?(Rails.root.to_s) && !loc.path.include?('scout_apm/logging') }
   end
 end

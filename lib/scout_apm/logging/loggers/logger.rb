@@ -75,14 +75,40 @@ module ScoutApm
 
         private
 
-        def first_app_location(locations = caller_locations)
-          locations.find { |loc| loc.path.include?(Rails.root.to_s) }
+        # Useful for testing.
+        def filter_log_location(call_stack = caller_locations)
+          rails_location = call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
+          return rails_location if rails_location
+
+          call_stack
+            .reject { |loc| loc.path.include?('lib/scout_apm_logging') }
+            .reject { |loc| loc.path.include?('broadcast_logger.rb') }
+            .first
+        end
+
+        # Cache log location to reduce performance impact.
+        def find_log_location
+          @find_log_location ||= begin
+            call_stack = caller_locations(1, 15)
+            filter_log_location(call_stack)
+          end
+        end
+
+        def format_message(severity, datetime, progname, msg)
+          formatter = @formatter || @default_formatter
+          args = [severity, datetime, progname, msg]
+          args << find_log_location if formatter.method(:call).arity == 5
+
+          # Clear cached log location to prevent location bleed.
+          @find_log_location = nil
+
+          formatter.call(*args)
         end
 
         def add_log_file_and_line_to_message(message)
           return message unless message.is_a?(String)
 
-          file = first_app_location(caller_locations(1, 10))
+          file = find_log_location
           return message unless file
 
           file_path = file.path.split('/').last
