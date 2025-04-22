@@ -76,22 +76,31 @@ module ScoutApm
         private
 
         # Useful for testing.
-        def filter_log_location(call_stack = caller_locations)
-          rails_location = call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
+        def filter_log_location(the_call_stack = caller_locations)
+          rails_location = the_call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
           return rails_location if rails_location
 
-          call_stack
-            .reject { |loc| loc.path.include?('lib/scout_apm_logging') }
+          the_call_stack
+            .reject { |loc| loc.path.include?('scout_apm/logging') }
             .reject { |loc| loc.path.include?('broadcast_logger.rb') }
             .first
         end
 
+        def call_stack
+          @call_stack ||= caller_locations(4, 15)
+        end
+
         # Cache log location to reduce performance impact.
         def find_log_location
-          @find_log_location ||= begin
-            call_stack = caller_locations(1, 15)
-            filter_log_location(call_stack)
-          end
+          @find_log_location ||= filter_log_location(call_stack)
+        end
+
+        def get_call_stack_for_attribute
+          call_stack
+            .map(&:to_s)
+            .reject { |loc| loc.include?('scout_apm/logging') }
+            .reject { |loc| loc.include?('broadcast_logger.rb') }
+            .join("\n")
         end
 
         # Ideally, we would pass an additional argument to the formatter, but
@@ -99,8 +108,10 @@ module ScoutApm
         # this is a work around for tagged logging and incorrect passed arguments.
         # May need to move to fiber at some point.
         def format_message(severity, datetime, progname, msg)
-          Thread.current[:scout_log_location] = "#{find_log_location.path}:#{find_log_location.lineno}" if find_log_location
-          super(severity, datetime, progname, msg).tap do |_message|
+          Thread.current[:scout_log_location] = get_call_stack_for_attribute
+
+          super(severity, datetime, progname, msg).tap do |_|
+            @call_stack = nil
             @find_log_location = nil
             Thread.current[:scout_log_location] = nil
           end
