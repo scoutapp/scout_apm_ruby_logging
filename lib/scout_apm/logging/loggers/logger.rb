@@ -99,13 +99,13 @@ module ScoutApm
             .first
         end
 
+        # Cache call stack to reduce performance impact.
         def call_stack
           @call_stack ||= caller_locations(4, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_depth'))
         end
 
-        # Cache log location to reduce performance impact.
         def find_log_location
-          @find_log_location ||= filter_log_location(call_stack)
+          filter_log_location(call_stack)
         end
 
         def get_call_stack_for_attribute
@@ -126,11 +126,12 @@ module ScoutApm
               get_call_stack_for_attribute
           end
 
-          super(severity, datetime, progname, msg).tap do |_|
-            @call_stack = nil
-            @find_log_location = nil
-            Thread.current[:scout_log_location] = nil
-          end
+          super(severity, datetime, progname, msg)
+
+        # Reset for next logger call.
+        ensure
+          @call_stack = nil
+          Thread.current[:scout_log_location] = nil
         end
 
         def add_log_file_and_line_to_message(message)
