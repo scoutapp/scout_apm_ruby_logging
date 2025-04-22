@@ -7,6 +7,14 @@ module ScoutApm
       # The root of the application.
       attr_accessor :application_root
 
+      # Use this as the entrypoint.
+      def self.instance
+        @@instance ||= new.tap do |instance|
+          instance.config = ScoutApm::Logging::Config.with_file(instance, instance.config.value('config_file'))
+          instance.config.log_settings(instance.logger)
+        end
+      end
+
       # Initially start up without attempting to load a configuration file. We
       # need to be able to lookup configuration options like "application_root"
       # which would then in turn influence where the yaml configuration file is
