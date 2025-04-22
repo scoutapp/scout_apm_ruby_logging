@@ -126,6 +126,21 @@ module ScoutApm
       @find_log_location_3 = nil
     end
 
+    def warn_eleven(msg, *args)
+      caller_info = find_log_location_2
+
+      file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+      line = caller_info.lineno
+
+      # Log the message with the file and line number where the log was called
+      original_warn("(#{file}:#{line}): #{msg}")
+
+      Thread.current['scout_log_location'] = get_call_stack_for_attribute
+      @call_stack = nil
+      @find_log_location_2 = nil
+      Thread.current['scout_log_location'] = nil
+    end
+
 
       def warn_three(msg)
         last_local_location = caller[0..15].find { |path| path.include?(Rails.root.to_s) }
