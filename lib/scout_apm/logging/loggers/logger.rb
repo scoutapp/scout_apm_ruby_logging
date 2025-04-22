@@ -71,6 +71,48 @@ module ScoutApm
       original_warn("(#{file}:#{line}): #{msg}")
     end
 
+    def warn_seven(msg, *args)
+      caller_info = find_log_location_2
+
+      file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+      line = caller_info.lineno
+
+      # Log the message with the file and line number where the log was called
+      original_warn("(#{file}:#{line}): #{msg}")
+
+      @call_stack = nil
+      @find_log_location_2 = nil
+    end
+
+    def warn_eight(msg, *args)
+      caller_info = find_log_location_2
+
+      file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+      line = caller_info.lineno
+
+      # Log the message with the file and line number where the log was called
+      original_warn("(#{file}:#{line}): #{msg}")
+
+      get_call_stack_for_attribute
+      @call_stack = nil
+      @find_log_location_2 = nil
+    end
+
+    def warn_nine(msg, *args)
+      caller_info = find_log_location_2
+
+      file = caller_info.path.split("/")[-1]  # Split the string into file and line number
+      line = caller_info.lineno
+
+      # Log the message with the file and line number where the log was called
+      original_warn("(#{file}:#{line}): #{msg}")
+
+      get_call_stack_for_attribute_2
+      @call_stack = nil
+      @find_log_location_2 = nil
+    end
+
+
       def warn_three(msg)
         last_local_location = caller[0..15].find { |path| path.include?(Rails.root.to_s) }
         file = last_local_location.split("/")[-1]  # Split the string into file and line number
@@ -78,6 +120,7 @@ module ScoutApm
         # Log the message with the file and line number where the log was called
         original_warn("(#{file}:#{line}): #{msg}")
       end
+      
       # alias_method :warn, :warn_two
 
 
@@ -97,6 +140,44 @@ module ScoutApm
         end
 
         private 
+
+        def filter_log_location(the_call_stack = caller_locations)
+          rails_location = the_call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
+          return rails_location if rails_location
+
+          the_call_stack
+            .reject { |loc| loc.path.include?('lib/scout_apm/logging') }
+            .reject { |loc| loc.path.include?('broadcast_logger.rb') }
+            .first
+        end
+
+        def call_stack
+          @call_stack ||= caller_locations(4, 15)
+        end
+
+        def find_log_location_2
+          @find_log_location_2 ||= filter_log_location(call_stack)
+        end
+
+        def get_call_stack_for_attribute
+          call_stack
+            .map(&:to_s)
+            .reject { |loc| loc.include?('scout_apm/logging') }
+            .reject { |loc| loc.include?('broadcast_logger.rb') }
+            .join("\n")
+        end
+
+        def get_call_stack_for_attribute_2
+          call_stack
+            .each_with_object([]) do |loc, arr|
+              str = loc.to_s
+              unless str.include?('scout_apm/logging') || str.include?('broadcast_logger.rb')
+                arr << str
+              end
+            end
+            .join("\n")
+        end
+        
 
         def find_log_location
           @location ||= begin
