@@ -7,55 +7,68 @@ module ScoutApm
       class FileLogger < ::Logger
         include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
 
+        def initialize(*args, **kwargs, &block)
+          if ScoutApm::Logging::Context.instance.config.value('logs_capture_log_line')
+            self.class.send(:alias_method, :debug, :debug_patched)
+            self.class.send(:alias_method, :info, :info_patched)
+            self.class.send(:alias_method, :warn, :warn_patched)
+            self.class.send(:alias_method, :error, :error_patched)
+            self.class.send(:alias_method, :fatal, :fatal_patched)
+            self.class.send(:alias_method, :unknown, :unknown_patched)
+          end
+
+          super(*args, **kwargs, &block)
+        end
+
         # Taken from ::Logger. Progname becomes message if no block is given.
-        def debug(progname = nil, &block)
+        def debug_patched(progname = nil, &block)
           return true if level > DEBUG
 
           # short circuit the block to update the message. #add would eventually call it.
           # https://github.com/ruby/logger/blob/v1.7.0/lib/logger.rb#L675
           progname = yield if block_given?
-          message = add_log_file_and_line_to_message(progname) if progname
-          add(DEBUG, message, nil, &block)
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(DEBUG, progname, nil, &block)
         end
 
-        def info(progname = nil, &block)
+        def info_patched(progname = nil, &block)
           return true if level > INFO
 
           progname = yield if block_given?
-          message = add_log_file_and_line_to_message(progname) if progname
-          add(INFO, message, nil, &block)
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(INFO, progname, nil, &block)
         end
 
-        def warn(progname = nil, &block)
+        def warn_patched(progname = nil, &block)
           return true if level > WARN
 
           progname = yield if block_given?
-          message = add_log_file_and_line_to_message(progname) if progname
-          add(WARN, message, nil, &block)
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(WARN, progname, nil, &block)
         end
 
-        def error(progname = nil, &block)
+        def error_patched(progname = nil, &block)
           return true if level > ERROR
 
           progname = yield if block_given?
-          message = add_log_file_and_line_to_message(progname) if progname
-          add(ERROR, message, nil, &block)
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(ERROR, progname, nil, &block)
         end
 
-        def fatal(progname = nil, &block)
+        def fatal_patched(progname = nil, &block)
           return true if level > FATAL
 
           progname = yield if block_given?
-          message = add_log_file_and_line_to_message(progname) if progname
-          add(FATAL, message, nil, &block)
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(FATAL, progname, nil, &block)
         end
 
-        def unknown(progname = nil, &block)
+        def unknown_patched(progname = nil, &block)
           return true if level > UNKNOWN
 
           progname = yield if block_given?
-          message = add_log_file_and_line_to_message(progname) if progname
-          add(UNKNOWN, message, nil, &block)
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(UNKNOWN, progname, nil, &block)
         end
 
         # Other loggers may be extended with additional methods that have not been applied to this file logger.
@@ -87,7 +100,7 @@ module ScoutApm
         end
 
         def call_stack
-          @call_stack ||= caller_locations(4, 15)
+          @call_stack ||= caller_locations(4, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_depth'))
         end
 
         # Cache log location to reduce performance impact.
@@ -108,7 +121,10 @@ module ScoutApm
         # this is a work around for tagged logging and incorrect passed arguments.
         # May need to move to fiber at some point.
         def format_message(severity, datetime, progname, msg)
-          Thread.current[:scout_log_location] = get_call_stack_for_attribute
+          if ScoutApm::Logging::Context.instance.config.value('logs_capture_call_stack')
+            Thread.current[:scout_log_location] =
+              get_call_stack_for_attribute
+          end
 
           super(severity, datetime, progname, msg).tap do |_|
             @call_stack = nil
