@@ -50,6 +50,9 @@ class RootController < ActionController::Base
       b.report('patched_warn_9') do
         Rails.logger.warn_nine('Add location log attributes')
       end
+      b.report('patched_warn_10') do
+        Rails.logger.warn_ten('Add location log attributes')
+      end
       b.report('original_warn') do
         Rails.logger.original_warn('Add location log attributes')
       end
