@@ -21,7 +21,8 @@
 # logs_proxy_log_dir - the directory to store logs in for monitoring
 # logs_capture_call_stack - true or false. If true, capture the call stack for each log message
 # logs_capture_log_line - true or false. If true, capture the log line for each log message
-# logs_call_stack_depth - the number of frames to capture in the call stack
+# logs_call_stack_search_depth - the number of frames to search in the call stack
+# logs_call_stack_capture_depth - the number of frames to capture in the call stack
 #
 # Any of these config settings can be set with an environment variable prefixed
 # by SCOUT_ and uppercasing the key: SCOUT_LOG_LEVEL for instance.
@@ -47,14 +48,16 @@ module ScoutApm
         logs_log_file_size
         logs_capture_call_stack
         logs_capture_log_line
-        logs_call_stack_depth
+        logs_call_stack_search_depth
+        logs_call_stack_capture_depth
       ].freeze
 
       SETTING_COERCIONS = {
         'logs_monitor' => BooleanCoercion.new,
         'logs_capture_call_stack' => BooleanCoercion.new,
         'logs_capture_log_line' => BooleanCoercion.new,
-        'logs_call_stack_depth' => IntegerCoercion.new,
+        'logs_call_stack_search_depth' => IntegerCoercion.new,
+        'logs_call_stack_capture_depth' => IntegerCoercion.new,
         'logs_log_file_size' => IntegerCoercion.new
       }.freeze
 
@@ -114,9 +117,10 @@ module ScoutApm
           'logs_reporting_endpoint_http' => 'https://otlp.scoutotel.com:4318/v1/logs',
           'logs_proxy_log_dir' => '/tmp/scout_apm/logs/',
           'logs_log_file_size' => 1024 * 1024 * 10,
-          'logs_capture_call_stack' => true,
-          'logs_capture_log_line' => true,
-          'logs_call_stack_depth' => 15
+          'logs_capture_call_stack' => false,
+          'logs_capture_log_line' => false,
+          'logs_call_stack_search_depth' => 15,
+          'logs_call_stack_capture_depth' => 2
         }.freeze
 
         def value(key)

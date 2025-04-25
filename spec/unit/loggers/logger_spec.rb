@@ -20,8 +20,24 @@ ensure
 end
 
 describe ScoutApm::Logging::Loggers::Logger do
-  it 'should not capture log line' do
-    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'false'
+  it 'should not capture call stack or log line' do
+    ScoutApm::Logging::Context.instance
+
+    output_from_log = capture_stdout do
+      logger = ScoutApm::Logging::Loggers::FileLogger.new($stdout).tap do |instance|
+        instance.level = 0
+        instance.formatter = ScoutApm::Logging::Loggers::Formatter.new
+      end
+
+      logger.info('Hi')
+    end
+
+    expect(output_from_log).not_to include('"log_location":"')
+    expect(output_from_log).not_to include('"msg":"[logger_spec.rb')
+  end
+
+  it 'should capture call stack' do
+    ENV['SCOUT_LOGS_CAPTURE_CALL_STACK'] = 'true'
     ScoutApm::Logging::Context.instance
 
     output_from_log = capture_stdout do
@@ -35,10 +51,13 @@ describe ScoutApm::Logging::Loggers::Logger do
 
     expect(output_from_log).to include('"log_location":"')
     expect(output_from_log).not_to include('"msg":"[logger_spec.rb')
-    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'true' # set back to default
+    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'false' # set back to default
   end
 
   it 'should capture log line and call stack' do
+    ENV['SCOUT_LOGS_CAPTURE_CALL_STACK'] = 'true'
+    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'true'
+
     ScoutApm::Logging::Context.instance
 
     output_from_log = capture_stdout do
@@ -52,10 +71,12 @@ describe ScoutApm::Logging::Loggers::Logger do
 
     expect(output_from_log).to include('"msg":"[logger_spec.rb')
     expect(output_from_log).to include('"log_location":"')
+    ENV['SCOUT_LOGS_CAPTURE_CALL_STACK'] = 'false' # set back to default
+    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'false' # set back to default
   end
 
-  it 'should not capture call stack' do
-    ENV['SCOUT_LOGS_CAPTURE_CALL_STACK'] = 'false'
+  it 'should capture log line' do
+    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'true'
     ScoutApm::Logging::Context.instance
 
     output_from_log = capture_stdout do
@@ -69,6 +90,6 @@ describe ScoutApm::Logging::Loggers::Logger do
 
     expect(output_from_log).not_to include('"log_location":"')
     expect(output_from_log).to include('"msg":"[logger_spec.rb')
-    ENV['SCOUT_LOGS_CAPTURE_CALL_STACK'] = 'true' # set back to default
+    ENV['SCOUT_LOGS_CAPTURE_LOG_LINE'] = 'false' # set back to default
   end
 end
