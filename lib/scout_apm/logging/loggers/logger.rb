@@ -92,16 +92,11 @@ module ScoutApm
         def filter_log_location(the_call_stack = caller_locations)
           rails_location = the_call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
           return rails_location if rails_location
-
-          the_call_stack
-            .reject { |loc| loc.path.include?('scout_apm/logging') }
-            .reject { |loc| loc.path.include?('broadcast_logger.rb') }
-            .first
         end
 
         # Cache call stack to reduce performance impact.
         def call_stack
-          @call_stack ||= caller_locations(4, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_depth'))
+          @call_stack ||= caller_locations(4, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_search_depth'))
         end
 
         def find_log_location
@@ -110,9 +105,9 @@ module ScoutApm
 
         def get_call_stack_for_attribute
           call_stack
+            .select { |loc| loc.path.include?(Rails.root.to_s) }
             .map(&:to_s)
-            .reject { |loc| loc.include?('scout_apm/logging') }
-            .reject { |loc| loc.include?('broadcast_logger.rb') }
+            .slice(0, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_capture_depth'))
             .join("\n")
         end
 
