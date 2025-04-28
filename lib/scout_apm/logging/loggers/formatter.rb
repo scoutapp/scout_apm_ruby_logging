@@ -12,24 +12,31 @@ module ScoutApm
       class Formatter < ::Logger::Formatter
         DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%LZ'
 
-        def call(severity, time, progname, msg) # rubocop:disable Metrics/AbcSize
+        def call(severity, time, progname, msg)
           attributes_to_log = {
             severity:,
             time: format_datetime(time),
             msg: msg2str(msg)
           }
 
+          log_location = Thread.current[:scout_log_location]
+
           attributes_to_log[:progname] = progname if progname
           attributes_to_log['service.name'] = service_name
+          attributes_to_log['log_location'] = log_location if log_location
 
           attributes_to_log.merge!(scout_transaction_id)
           attributes_to_log.merge!(scout_layer)
           attributes_to_log.merge!(scout_context)
-          # Naive local benchmarks show this takes around 200 microseconds. As such, we only apply it to WARN and above.
-          attributes_to_log.merge!(local_log_location) if ::Logger::Severity.const_get(severity) >= ::Logger::Severity::WARN
 
-          message = "#{attributes_to_log.to_json}\n"
+          emit_log(msg, severity, time, attributes_to_log)
 
+          "#{attributes_to_log.to_json}\n"
+        end
+
+        private
+
+        def emit_log(msg, severity, time, attributes_to_log)
           ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
             name: 'scout_apm',
             version: '0.1.0'
@@ -41,10 +48,7 @@ module ScoutApm
             body: msg,
             context: ::OpenTelemetry::Context.current
           )
-          message
         end
-
-        private
 
         def format_datetime(time)
           time.utc.strftime(DATETIME_FORMAT)
@@ -101,15 +105,6 @@ module ScoutApm
 
         def scout_transaction_id
           { "scout_transaction_id": ScoutApm::RequestManager.lookup.transaction_id }
-        end
-
-        def local_log_location
-          # Should give us the last local stack which called the log within just the last couple frames.
-          last_local_location = caller[0..15].find { |path| path.include?(Rails.root.to_s) }
-
-          return {} unless last_local_location
-
-          { 'log_location' => last_local_location }
         end
 
         def context

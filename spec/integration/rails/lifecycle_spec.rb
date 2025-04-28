@@ -5,6 +5,12 @@ require 'zlib'
 require 'stringio'
 require_relative '../../rails/app'
 
+ScoutApm::Logging::Loggers::FileLogger.class_exec do
+  define_method(:filter_log_location) do |locations|
+    locations.find { |loc| loc.path.include?(Rails.root.to_s) && !loc.path.include?('scout_apm/logging') }
+  end
+end
+
 describe ScoutApm::Logging do
   before do
     @file_path = '/app/response_body.txt'
@@ -55,17 +61,16 @@ describe ScoutApm::Logging do
     end
 
     local_messages = lines.map { |item| item['msg'] }
+    puts local_messages
 
     # Verify we have all the logs in the local log file
     expect(local_messages.count('[TEST] Some log')).to eq(1)
     expect(local_messages.count('[YIELD] Yield Test')).to eq(1)
     expect(local_messages.count('Another Log')).to eq(1)
     expect(local_messages.count('Should not be captured')).to eq(0)
-
-    log_locations = lines.map { |item| item['log_location'] }.compact
-
-    # Verify that log attributes aren't persisted
-    expect(log_locations.size).to eq(1)
+    expect(local_messages.count('Warn level log')).to eq(1)
+    expect(local_messages.count('Error level log')).to eq(1)
+    expect(local_messages.count('Fatal level log')).to eq(1)
 
     # Verify the logs are sent to the receiver
     receiver_contents = File.readlines(@file_path, chomp: true)
@@ -73,6 +78,9 @@ describe ScoutApm::Logging do
     expect(receiver_contents.count('[YIELD] Yield Test')).to eq(1)
     expect(receiver_contents.count('Another Log')).to eq(1)
     expect(receiver_contents.count('Should not be captured')).to eq(0)
+    expect(local_messages.count('Warn level log')).to eq(1)
+    expect(local_messages.count('Error level log')).to eq(1)
+    expect(local_messages.count('Fatal level log')).to eq(1)
 
     # Kill the rails process. We use kill as using any other signal throws a long log line.
     Process.kill('KILL', rails_pid)

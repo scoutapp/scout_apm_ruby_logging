@@ -7,6 +7,70 @@ module ScoutApm
       class FileLogger < ::Logger
         include ::ActiveSupport::LoggerSilence if const_defined?('::ActiveSupport::LoggerSilence')
 
+        def initialize(*args, **kwargs, &block)
+          if ScoutApm::Logging::Context.instance.config.value('logs_capture_log_line')
+            self.class.send(:alias_method, :debug, :debug_patched)
+            self.class.send(:alias_method, :info, :info_patched)
+            self.class.send(:alias_method, :warn, :warn_patched)
+            self.class.send(:alias_method, :error, :error_patched)
+            self.class.send(:alias_method, :fatal, :fatal_patched)
+            self.class.send(:alias_method, :unknown, :unknown_patched)
+          end
+
+          super(*args, **kwargs, &block)
+        end
+
+        # Taken from ::Logger. Progname becomes message if no block is given.
+        def debug_patched(progname = nil, &block)
+          return true if level > DEBUG
+
+          # short circuit the block to update the message. #add would eventually call it.
+          # https://github.com/ruby/logger/blob/v1.7.0/lib/logger.rb#L675
+          progname = yield if block_given?
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(DEBUG, progname, nil, &block)
+        end
+
+        def info_patched(progname = nil, &block)
+          return true if level > INFO
+
+          progname = yield if block_given?
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(INFO, progname, nil, &block)
+        end
+
+        def warn_patched(progname = nil, &block)
+          return true if level > WARN
+
+          progname = yield if block_given?
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(WARN, progname, nil, &block)
+        end
+
+        def error_patched(progname = nil, &block)
+          return true if level > ERROR
+
+          progname = yield if block_given?
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(ERROR, progname, nil, &block)
+        end
+
+        def fatal_patched(progname = nil, &block)
+          return true if level > FATAL
+
+          progname = yield if block_given?
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(FATAL, progname, nil, &block)
+        end
+
+        def unknown_patched(progname = nil, &block)
+          return true if level > UNKNOWN
+
+          progname = yield if block_given?
+          progname = add_log_file_and_line_to_message(progname) if progname
+          add(UNKNOWN, progname, nil, &block)
+        end
+
         # Other loggers may be extended with additional methods that have not been applied to this file logger.
         # Most likely, these methods will still utilize the exiting logging methods to write to the IO device,
         # however, if this is not the case we may miss logs. With that being said, we shouldn't impact the original
@@ -20,6 +84,61 @@ module ScoutApm
         # More impactful for the broadcast logger.
         def respond_to_missing?(name, *_args)
           super
+        end
+
+        private
+
+        # Useful for testing.
+        def filter_log_location(the_call_stack = caller_locations)
+          rails_location = the_call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
+          return rails_location if rails_location
+        end
+
+        # Cache call stack to reduce performance impact.
+        def call_stack
+          @call_stack ||= caller_locations(4, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_search_depth'))
+        end
+
+        def find_log_location
+          filter_log_location(call_stack)
+        end
+
+        def get_call_stack_for_attribute
+          call_stack
+            .select { |loc| loc.path.include?(Rails.root.to_s) }
+            .map(&:to_s)
+            .slice(0, ScoutApm::Logging::Context.instance.config.value('logs_call_stack_capture_depth'))
+            .join("\n")
+        end
+
+        # Ideally, we would pass an additional argument to the formatter, but
+        # we run into issues with how tagged logging is implemented. As such,
+        # this is a work around for tagged logging and incorrect passed arguments.
+        # May need to move to fiber at some point.
+        def format_message(severity, datetime, progname, msg)
+          if ScoutApm::Logging::Context.instance.config.value('logs_capture_call_stack')
+            Thread.current[:scout_log_location] =
+              get_call_stack_for_attribute
+          end
+
+          super(severity, datetime, progname, msg)
+
+        # Reset for next logger call.
+        ensure
+          @call_stack = nil
+          Thread.current[:scout_log_location] = nil
+        end
+
+        def add_log_file_and_line_to_message(message)
+          return message unless message.is_a?(String)
+
+          file = find_log_location
+          return message unless file
+
+          file_path = file.path.split('/').last
+          line_number = file.lineno
+
+          "[#{file_path}:#{line_number}] #{message}"
         end
       end
 
