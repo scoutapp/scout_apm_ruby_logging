@@ -19,19 +19,10 @@
 # logs_config        - a hash of configuration options for merging into the collector's config
 # logs_reporting_endpoint - the endpoint to send logs to
 # logs_proxy_log_dir - the directory to store logs in for monitoring
-# manager_lock_file  - the location for obtaining an exclusive lock for running monitor manager
-# monitor_pid_file   - the location of the pid file for the monitor
-# monitor_state_file - the location of the state file for the monitor
-# monitor_interval   - the interval to check the collector healtcheck and for new state logs
-# monitor_interval_delay - the delay to wait before running the first monitor interval
-# collector_log_level - the log level for the collector
-# collector_sending_queue_storage_dir - the directory to store queue files
-# collector_offset_storage_dir - the directory to store offset files
-# collector_pid_file - the location of the pid file for the collector
-# collector_download_dir - the directory to store downloaded collector files
-# collector_config_file - the location of the config file for the collector
-# collector_version - the version of the collector to download
-# health_check_port - the port to use for the collector health check. Default is dynamically derived based on port availability
+# logs_capture_call_stack - true or false. If true, capture the call stack for each log message
+# logs_capture_log_line - true or false. If true, capture the log line for each log message
+# logs_call_stack_search_depth - the number of frames to search in the call stack
+# logs_call_stack_capture_depth - the number of frames to capture in the call stack
 #
 # Any of these config settings can be set with an environment variable prefixed
 # by SCOUT_ and uppercasing the key: SCOUT_LOG_LEVEL for instance.
@@ -55,10 +46,18 @@ module ScoutApm
         logs_reporting_endpoint_http
         logs_proxy_log_dir
         logs_log_file_size
+        logs_capture_call_stack
+        logs_capture_log_line
+        logs_call_stack_search_depth
+        logs_call_stack_capture_depth
       ].freeze
 
       SETTING_COERCIONS = {
         'logs_monitor' => BooleanCoercion.new,
+        'logs_capture_call_stack' => BooleanCoercion.new,
+        'logs_capture_log_line' => BooleanCoercion.new,
+        'logs_call_stack_search_depth' => IntegerCoercion.new,
+        'logs_call_stack_capture_depth' => IntegerCoercion.new,
         'logs_log_file_size' => IntegerCoercion.new
       }.freeze
 
@@ -117,7 +116,11 @@ module ScoutApm
           'logs_reporting_endpoint' => 'https://otlp.scoutotel.com:4317',
           'logs_reporting_endpoint_http' => 'https://otlp.scoutotel.com:4318/v1/logs',
           'logs_proxy_log_dir' => '/tmp/scout_apm/logs/',
-          'logs_log_file_size' => 1024 * 1024 * 10
+          'logs_log_file_size' => 1024 * 1024 * 10,
+          'logs_capture_call_stack' => false,
+          'logs_capture_log_line' => false,
+          'logs_call_stack_search_depth' => 15,
+          'logs_call_stack_capture_depth' => 2
         }.freeze
 
         def value(key)
