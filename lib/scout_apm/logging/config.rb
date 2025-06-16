@@ -23,6 +23,8 @@
 # logs_capture_log_line - true or false. If true, capture the log line for each log message
 # logs_call_stack_search_depth - the number of frames to search in the call stack
 # logs_call_stack_capture_depth - the number of frames to capture in the call stack
+# logs_method_missing_warning - true or false. If true, log a warning when method_missing is called
+# logs_method_missing_call_stack -  true or false. If true, capture the call stack when method_missing is called
 #
 # Any of these config settings can be set with an environment variable prefixed
 # by SCOUT_ and uppercasing the key: SCOUT_LOG_LEVEL for instance.
@@ -50,6 +52,8 @@ module ScoutApm
         logs_capture_log_line
         logs_call_stack_search_depth
         logs_call_stack_capture_depth
+        logs_method_missing_warning
+        logs_method_missing_call_stack
       ].freeze
 
       SETTING_COERCIONS = {
@@ -58,7 +62,9 @@ module ScoutApm
         'logs_capture_log_line' => BooleanCoercion.new,
         'logs_call_stack_search_depth' => IntegerCoercion.new,
         'logs_call_stack_capture_depth' => IntegerCoercion.new,
-        'logs_log_file_size' => IntegerCoercion.new
+        'logs_log_file_size' => IntegerCoercion.new,
+        'logs_method_missing_warning' => BooleanCoercion.new,
+        'logs_method_missing_call_stack' => BooleanCoercion.new
       }.freeze
 
       # The bootstrapped, and initial config that we attach to the context. Will be swapped out by
@@ -120,7 +126,9 @@ module ScoutApm
           'logs_capture_call_stack' => false,
           'logs_capture_log_line' => false,
           'logs_call_stack_search_depth' => 15,
-          'logs_call_stack_capture_depth' => 2
+          'logs_call_stack_capture_depth' => 2,
+          'logs_method_missing_warning' => true,
+          'logs_method_missing_call_stack' => false
         }.freeze
 
         def value(key)

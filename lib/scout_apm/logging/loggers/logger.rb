@@ -78,7 +78,15 @@ module ScoutApm
         def method_missing(name, *_args)
           return unless defined?(::Rails)
 
-          ::Rails.logger.warn("Method #{name} called on ScoutApm::Logging::Loggers::FileLogger, but it is not defined.")
+          return unless ScoutApm::Logging::Context.instance.config.value('logs_method_missing_warning')
+
+          if ScoutApm::Logging::Context.instance.config.value('logs_method_missing_call_stack')
+            cs = caller_locations(0, 20)
+            ::Rails.logger.warn("Method #{name} called on ScoutApm::Logging::Loggers::FileLogger, but it is not defined.")
+            ::Rails.logger.warn("Call stack: #{cs}")
+          else
+            ::Rails.logger.warn("Method #{name} called on ScoutApm::Logging::Loggers::FileLogger, but it is not defined. Try setting 'logs_method_missing_call_stack' to true in your Scout configuration to see the call stack.") # rubocop:disable Layout/LineLength
+          end
         end
 
         # More impactful for the broadcast logger.
