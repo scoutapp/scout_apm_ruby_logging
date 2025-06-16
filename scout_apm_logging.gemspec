@@ -29,4 +29,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rubocop', '1.50.2'
   s.add_development_dependency 'rubocop-ast', '1.30.0'
   s.add_development_dependency 'webmock'
+  # Old, but works. It is a small wrapper library around websocket-eventmachine
+  # for ActionCable protocols.
+  s.add_development_dependency 'action_cable_client'
 end
