@@ -12,6 +12,7 @@ AllCops:
 
 Metrics/BlockLength:
   Exclude:
+    - "scout_apm_logging.gemspec"
     - "spec/**/*"
 
 Metrics/ClassLength:
