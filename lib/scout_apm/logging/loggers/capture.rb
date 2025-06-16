@@ -56,7 +56,7 @@ module ScoutApm
           # Re-extend TaggedLogging to verify the patch is be applied.
           # This appears to be an issue in Ruby 2.7 with the broadcast logger.
           ruby_version = Gem::Version.new(RUBY_VERSION)
-          isruby27 = (ruby_version >= Gem::Version.new('2.7') && ruby_version < Gem::Version.new('3.0'))
+          isruby27 = ruby_version >= Gem::Version.new('2.7') && ruby_version < Gem::Version.new('3.0')
           return unless isruby27 && ::Rails.logger.respond_to?(:broadcasts)
 
           ::Rails.logger.broadcasts.each do |logger|
