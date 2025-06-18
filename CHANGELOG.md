@@ -1,3 +1,15 @@
+## 2.1.0
+* Add ability to capture log line with logs.
+  * `logs_capture_log_line: true`
+* Add ability to capture stack trace with logs.
+  * `logs_capture_call_stack: true`
+  * See [#98](https://github.com/scoutapp/scout_apm_ruby_logging/pull/98) for benchmarks.
+* Add ability to disable warn message on method_missing.
+  * `logs_method_missing_warning: false`
+* Add ability to log stack trace on method_missing.
+  * `logs_method_missing_call_stack: true`
+* Add tests for ActionCable.
+
 ## 2.0.0
 * Remove vendored opentelmetry SDK.
 * Add support for Ruby 3.4.
