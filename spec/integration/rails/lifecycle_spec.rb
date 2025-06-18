@@ -1,8 +1,12 @@
 require 'webmock/rspec'
 
+# Old, but still works.
+require 'action_cable_client'
+require 'eventmachine'
 require 'spec_helper'
 require 'zlib'
 require 'stringio'
+require 'securerandom'
 require_relative '../../rails/app'
 
 ScoutApm::Logging::Loggers::FileLogger.class_exec do
@@ -44,6 +48,27 @@ describe ScoutApm::Logging do
     # Call the app to generate the logs
     `curl localhost:9292`
 
+    channel_client = fork do
+      url = 'ws://localhost:9292/cable'
+      channel_name = 'TestChannel'
+      # Loops.
+      EventMachine.run do
+        client = ActionCableClient.new(url, channel_name)
+        # called whenever a welcome message is received from the server
+        client.connected { puts 'successfully connected.' }
+
+        client.subscribed do
+          puts 'client subscribed to the channel.'
+          client.perform('ding', { message: 'hello from client' })
+        end
+
+        # called whenever a message is received from the server
+        client.received do |message|
+          puts message
+        end
+      end
+    end
+
     sleep 5
 
     proxy_dir = context.config.value('logs_proxy_log_dir')
@@ -82,8 +107,17 @@ describe ScoutApm::Logging do
     expect(local_messages.count('Error level log')).to eq(1)
     expect(local_messages.count('Fatal level log')).to eq(1)
 
+    # Verify we recorded server ActionCable messages
+    expect(receiver_contents.count { |msg| msg.include?('ActionCable Connected:') }).to eq(1)
+    expect(receiver_contents.count('Subscribed to test_channel')).to eq(1)
+    expect(receiver_contents.count { |msg| msg.include?('Ding received with data: {"message"') }).to eq(1)
+    expect(local_messages.count { |msg| msg.include?('ActionCable Connected:') }).to eq(1)
+    expect(local_messages.count('Subscribed to test_channel')).to eq(1)
+    expect(local_messages.count { |msg| msg.include?('Ding received with data: {"message"') }).to eq(1)
+
     # Kill the rails process. We use kill as using any other signal throws a long log line.
     Process.kill('KILL', rails_pid)
+    Process.kill('KILL', channel_client)
   end
 
   private
