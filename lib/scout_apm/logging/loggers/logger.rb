@@ -90,8 +90,7 @@ module ScoutApm
 
         # Useful for testing.
         def filter_log_location(the_call_stack = caller_locations)
-          rails_location = the_call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
-          return rails_location if rails_location
+          the_call_stack.find { |loc| loc.path.include?(Rails.root.to_s) }
         end
 
         # Cache call stack to reduce performance impact.
