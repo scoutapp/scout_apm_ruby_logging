@@ -54,7 +54,7 @@ bundle exec rake test file=/path/to/spec/_spec.rb
 
 To run test(s) against a specific Ruby version:
 ```ruby
-DOCKER_RUBY_VERSION=3.4 bundle exec rake test
+DOCKER_RUBY_VERSION=4.0 bundle exec rake test
 ```
 
 ## Local
