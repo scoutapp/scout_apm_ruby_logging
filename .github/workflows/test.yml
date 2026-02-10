@@ -21,17 +21,7 @@ jobs:
           echo "LIBRARY_VERSION=$VERSION" >> $GITHUB_ENV
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
-        if: ${{ 
-          (env.LIBRARY_VERSION == '1' && 
-            !startsWith(matrix.ruby, '3.4') && 
-            !startsWith(matrix.ruby, '4.')
-          ) ||
-          (env.LIBRARY_VERSION == '2' && 
-            !startsWith(matrix.ruby, '2.6') && 
-            !startsWith(matrix.ruby, '2.7') && 
-            !startsWith(matrix.ruby, '3.0')
-          )
-        }}
+        if: ${{ (env.LIBRARY_VERSION == '1' && !startsWith(matrix.ruby, '3.4') && !startsWith(matrix.ruby, '4.')) || (env.LIBRARY_VERSION == '2' && !startsWith(matrix.ruby, '2.6') && !startsWith(matrix.ruby, '2.7') && !startsWith(matrix.ruby, '3.0')) }}
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
