@@ -28,9 +28,13 @@ Update your [RAILS_ROOT/config/scout_apm.yml](https://scoutapm.com/apps/new_ruby
 
   logs_monitor: true
   logs_ingest_key: ...
+  logs_capture_level: debug
 ```
 
 Deploy :rocket:
+
+## Docs
+For a complete list of configurations as well as additional information, visit our [docs](https://scoutapm.com/docs/ruby/log-management).
 
 ## Versions
 We currently maintain two versions: 2.x (Ruby 3.1+) and 1.x (2.6-3.3). These versions/branches have feature parity and a similar release cadence.
