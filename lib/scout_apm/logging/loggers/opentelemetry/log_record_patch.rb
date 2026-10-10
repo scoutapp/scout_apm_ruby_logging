@@ -5,6 +5,13 @@ module OpenTelemetry
         # Patch the log record creation to add back severity number.
         class LogsExporter
           def as_otlp_log_record(log_record_data)
+            dropped_attributes_count =
+              if log_record_data.respond_to?(:dropped_attributes_count)
+                log_record_data.dropped_attributes_count
+              else
+                log_record_data.total_recorded_attributes - log_record_data.attributes&.size.to_i
+              end
+
             Opentelemetry::Proto::Logs::V1::LogRecord.new(
               time_unix_nano: log_record_data.timestamp,
               observed_time_unix_nano: log_record_data.observed_timestamp,
@@ -12,7 +19,7 @@ module OpenTelemetry
               severity_text: log_record_data.severity_text,
               body: as_otlp_any_value(log_record_data.body),
               attributes: log_record_data.attributes&.map { |k, v| as_otlp_key_value(k, v) },
-              dropped_attributes_count: log_record_data.total_recorded_attributes - log_record_data.attributes&.size.to_i,
+              dropped_attributes_count: dropped_attributes_count,
               flags: log_record_data.trace_flags.instance_variable_get(:@flags),
               trace_id: log_record_data.trace_id,
               span_id: log_record_data.span_id
