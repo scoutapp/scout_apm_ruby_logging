@@ -1,3 +1,8 @@
+## 2.1.1
+* Fix all logs being dropped with `opentelemetry-logs-sdk` >= 0.7.0. Thanks @rpearce!
+  * See [#114](https://github.com/scoutapp/scout_apm_ruby_logging/pull/114).
+* Add Ruby 4.0 to test matrix.
+
 ## 2.1.0
 * Add ability to capture log line with logs.
   * `logs_capture_log_line: true`
