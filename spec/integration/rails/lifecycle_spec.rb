@@ -104,9 +104,9 @@ describe ScoutApm::Logging do
     expect(receiver_messages.count('[YIELD] Yield Test')).to eq(1)
     expect(receiver_messages.count('Another Log')).to eq(1)
     expect(receiver_messages.count('Should not be captured')).to eq(0)
-    expect(local_messages.count('Warn level log')).to eq(1)
-    expect(local_messages.count('Error level log')).to eq(1)
-    expect(local_messages.count('Fatal level log')).to eq(1)
+    expect(receiver_messages.count('Warn level log')).to eq(1)
+    expect(receiver_messages.count('Error level log')).to eq(1)
+    expect(receiver_messages.count('Fatal level log')).to eq(1)
 
     # Verify the severity number sent on the wire uses the OpenTelemetry scale,
     # not Ruby's Logger::Severity scale. Guards against upstream exporter drift

@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'opentelemetry-common'
   s.add_dependency 'opentelemetry-exporter-otlp-logs', '>= 0.2.0'
   s.add_dependency 'opentelemetry-instrumentation-base'
+  s.add_dependency 'opentelemetry-logs-api'
   s.add_dependency 'opentelemetry-logs-sdk', '>= 0.2.0'
   s.add_dependency 'opentelemetry-sdk', '>= 1.2'
   s.add_dependency 'scout_apm'

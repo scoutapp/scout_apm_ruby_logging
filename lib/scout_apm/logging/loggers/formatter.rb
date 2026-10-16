@@ -15,14 +15,15 @@ module ScoutApm
 
         # Ruby's Logger::Severity integers (0..5) do not match OpenTelemetry's
         # SeverityNumber scale. Emit the OTel value directly so the exporter can
-        # pass it straight through without a patch.
+        # pass it straight through without a patch. Logger labels UNKNOWN as
+        # 'ANY'; it ranks above FATAL, so keep it at the top of the scale.
         SEVERITY_NUMBER_MAP = {
           'DEBUG' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_DEBUG,
           'INFO' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_INFO,
           'WARN' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_WARN,
           'ERROR' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_ERROR,
           'FATAL' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_FATAL,
-          'UNKNOWN' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_UNSPECIFIED
+          'ANY' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_FATAL
         }.freeze
 
         def call(severity, time, progname, msg)
