@@ -1,3 +1,10 @@
+## Unreleased
+* Fix severity numbers sent with `opentelemetry-exporter-otlp-logs` >= 0.7.0 (Ruby levels were sent instead of OpenTelemetry levels).
+* Remove the OTLP exporter monkey patch; severity is now mapped when the log is emitted.
+* Replace the [#114](https://github.com/scoutapp/scout_apm_ruby_logging/pull/114) guard with a small `LogRecordData` shim, so mismatched `opentelemetry-exporter-otlp-logs` / `opentelemetry-logs-sdk` versions no longer drop logs.
+* Declare `opentelemetry-logs-api` as a direct dependency.
+* Fix `logger.unknown` raising `NameError`; it is now sent as FATAL.
+
 ## 2.1.1
 * Fix all logs being dropped with `opentelemetry-logs-sdk` >= 0.7.0. Thanks @rpearce!
   * See [#114](https://github.com/scoutapp/scout_apm_ruby_logging/pull/114).
