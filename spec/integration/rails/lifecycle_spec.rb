@@ -131,7 +131,7 @@ describe ScoutApm::Logging do
 
   private
 
-  def transform_body_to_records(body)
+  def transform_body_to_records(body) # rubocop:disable Metrics/AbcSize
     gz = Zlib::GzipReader.new(StringIO.new(body))
     uncompressed = gz.read
 
