@@ -24,8 +24,8 @@ describe ScoutApm::Logging do
         # We have to write to the file, as we are applying the patch in the fork, and
         # need to run the expectations in the main process.
         File.open(@file_path, 'a+') do |file|
-          msgs = transform_body_to_msgs(request.body)
-          file.puts(msgs)
+          records = transform_body_to_records(request.body)
+          records.each { |record| file.puts(record.to_json) }
         end
         { body: '', headers: {}, status: 200 }
       end
@@ -98,19 +98,28 @@ describe ScoutApm::Logging do
     expect(local_messages.count('Fatal level log')).to eq(1)
 
     # Verify the logs are sent to the receiver
-    receiver_contents = File.readlines(@file_path, chomp: true)
-    expect(receiver_contents.count('[TEST] Some log')).to eq(1)
-    expect(receiver_contents.count('[YIELD] Yield Test')).to eq(1)
-    expect(receiver_contents.count('Another Log')).to eq(1)
-    expect(receiver_contents.count('Should not be captured')).to eq(0)
+    receiver_records = File.readlines(@file_path, chomp: true).map { |line| JSON.parse(line) }
+    receiver_messages = receiver_records.map { |record| record['body'] }
+    expect(receiver_messages.count('[TEST] Some log')).to eq(1)
+    expect(receiver_messages.count('[YIELD] Yield Test')).to eq(1)
+    expect(receiver_messages.count('Another Log')).to eq(1)
+    expect(receiver_messages.count('Should not be captured')).to eq(0)
     expect(local_messages.count('Warn level log')).to eq(1)
     expect(local_messages.count('Error level log')).to eq(1)
     expect(local_messages.count('Fatal level log')).to eq(1)
 
+    # Verify the severity number sent on the wire uses the OpenTelemetry scale,
+    # not Ruby's Logger::Severity scale. Guards against upstream exporter drift
+    # now that the severity-remapping patch has been removed.
+    expect(severity_for(receiver_records, 'Warn level log')).to eq(:SEVERITY_NUMBER_WARN)
+    expect(severity_for(receiver_records, 'Error level log')).to eq(:SEVERITY_NUMBER_ERROR)
+    expect(severity_for(receiver_records, 'Fatal level log')).to eq(:SEVERITY_NUMBER_FATAL)
+    expect(severity_for(receiver_records, '[TEST] Some log')).to eq(:SEVERITY_NUMBER_INFO)
+
     # Verify we recorded server ActionCable messages
-    expect(receiver_contents.count { |msg| msg.include?('ActionCable Connected:') }).to eq(1)
-    expect(receiver_contents.count('Subscribed to test_channel')).to eq(1)
-    expect(receiver_contents.count { |msg| msg.include?('Ding received with data: {"message"') }).to eq(1)
+    expect(receiver_messages.count { |msg| msg.include?('ActionCable Connected:') }).to eq(1)
+    expect(receiver_messages.count('Subscribed to test_channel')).to eq(1)
+    expect(receiver_messages.count { |msg| msg.include?('Ding received with data: {"message"') }).to eq(1)
     expect(local_messages.count { |msg| msg.include?('ActionCable Connected:') }).to eq(1)
     expect(local_messages.count('Subscribed to test_channel')).to eq(1)
     expect(local_messages.count { |msg| msg.include?('Ding received with data: {"message"') }).to eq(1)
@@ -122,7 +131,7 @@ describe ScoutApm::Logging do
 
   private
 
-  def transform_body_to_msgs(body)
+  def transform_body_to_records(body)
     gz = Zlib::GzipReader.new(StringIO.new(body))
     uncompressed = gz.read
 
@@ -132,9 +141,18 @@ describe ScoutApm::Logging do
     value_hash[:resource_logs].map do |item|
       item[:scope_logs].map do |sl|
         sl[:log_records].map do |log|
-          log[:body][:string_value]
+          {
+            'body' => log[:body][:string_value],
+            'severity_number' => log[:severity_number],
+            'severity_text' => log[:severity_text]
+          }
         end
       end
     end.flatten
+  end
+
+  def severity_for(records, body)
+    record = records.find { |item| item['body'] == body }
+    record && record['severity_number']&.to_sym
   end
 end

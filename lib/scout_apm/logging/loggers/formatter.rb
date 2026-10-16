@@ -3,6 +3,7 @@
 require 'json'
 require 'logger'
 
+require 'opentelemetry-logs-api'
 require 'scout_apm'
 
 module ScoutApm
@@ -11,6 +12,18 @@ module ScoutApm
       # A simple JSON formatter which we can add a couple attributes to.
       class Formatter < ::Logger::Formatter
         DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%LZ'
+
+        # Ruby's Logger::Severity integers (0..5) do not match OpenTelemetry's
+        # SeverityNumber scale. Emit the OTel value directly so the exporter can
+        # pass it straight through without a patch.
+        SEVERITY_NUMBER_MAP = {
+          'DEBUG' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_DEBUG,
+          'INFO' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_INFO,
+          'WARN' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_WARN,
+          'ERROR' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_ERROR,
+          'FATAL' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_FATAL,
+          'UNKNOWN' => ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_UNSPECIFIED
+        }.freeze
 
         def call(severity, time, progname, msg)
           attributes_to_log = {
@@ -42,7 +55,9 @@ module ScoutApm
             version: '0.1.0'
           ).on_emit(
             severity_text: severity,
-            severity_number: ::Logger::Severity.const_get(severity),
+            severity_number: SEVERITY_NUMBER_MAP.fetch(
+              severity, ::OpenTelemetry::Logs::SeverityNumber::SEVERITY_NUMBER_UNSPECIFIED
+            ),
             attributes: attributes_to_log.transform_keys(&:to_s),
             timestamp: time,
             body: msg,
