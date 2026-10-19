@@ -5,11 +5,6 @@ require 'spec_helper'
 
 require 'scout_apm_logging'
 
-ScoutApm::Logging::Loggers::Formatter.class_exec do
-  define_method(:emit_log) do |msg, severity, time, attributes_to_log|
-  end
-end
-
 def capture_stdout
   old_stdout = $stdout
   $stdout = StringIO.new
@@ -20,6 +15,10 @@ ensure
 end
 
 describe ScoutApm::Logging::Loggers::Logger do
+  before do
+    allow_any_instance_of(ScoutApm::Logging::Loggers::Formatter).to receive(:emit_log)
+  end
+
   it 'should not capture call stack or log line' do
     ScoutApm::Logging::Context.instance
 
