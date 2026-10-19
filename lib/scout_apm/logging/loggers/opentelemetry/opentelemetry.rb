@@ -4,7 +4,7 @@ require 'opentelemetry'
 require 'opentelemetry/sdk'
 require 'opentelemetry-logs-sdk'
 require 'opentelemetry/exporter/otlp_logs'
-require_relative './log_record_patch'
+require_relative './log_record_data_compat'
 
 module ScoutApm
   module Logging
