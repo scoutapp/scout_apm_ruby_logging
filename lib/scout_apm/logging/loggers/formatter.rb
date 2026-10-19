@@ -50,6 +50,14 @@ module ScoutApm
 
         private
 
+        # to_json raises on binary or invalid text, and the raise escapes the log call.
+        def msg2str(msg)
+          text = super
+          return text if text.valid_encoding? && text.encoding != Encoding::BINARY
+
+          text.dup.force_encoding(Encoding::UTF_8).scrub
+        end
+
         def emit_log(msg, severity, time, attributes_to_log)
           ScoutApm::Logging::Loggers::OpenTelemetry.logger_provider.logger(
             name: 'scout_apm',
@@ -61,7 +69,7 @@ module ScoutApm
             ),
             attributes: attributes_to_log.transform_keys(&:to_s),
             timestamp: time,
-            body: msg,
+            body: msg.is_a?(String) ? attributes_to_log[:msg] : msg,
             context: ::OpenTelemetry::Context.current
           )
         end
